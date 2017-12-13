@@ -2,9 +2,9 @@ var canvas = document.querySelector("canvas"); // Creates a link to the canvas e
 var surface = canvas.getContext("2d"); // Sets the context of the canvas to 2d, thus creating a surface on which to draw.
 
 var player = document.getElementById("player");
-var playerX = 256;
-var playerY = 256;
-var playerSpeed = 10;
+var playerX = 352;
+var playerY = 352;
+var playerSpeed = 5;
 
 var leftPressed = false;
 var rightPressed = false;
@@ -18,7 +18,7 @@ var map =
 	[0,1,0,1,0,1,0,1,0,1,0],
 	[0,1,0,1,1,1,0,1,0,1,0],
 	[0,1,0,0,0,0,0,1,0,1,0],
-	[0,1,0,1,0,0,1,1,0,0,0],
+	[0,1,0,1,0,1,1,1,0,0,0],
 	[0,1,0,1,0,0,0,0,0,1,0],
 	[0,1,0,1,1,1,1,1,0,1,0],
 	[0,1,0,0,1,0,0,0,0,1,0],
@@ -28,9 +28,6 @@ var map =
 
 var ROWS = map.length;
 var COLS = map[0].length;
-
-var wall = 0;
-var floor = 1;
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
@@ -48,38 +45,39 @@ function update()
 
 function createMap()
 {
-	wall = new Image(0);
+	wall = new Image();
 	wall.src = "img/wall.png";
 	floor = new Image();
 	floor.src = "img/grass.png";
-	map = [];
+	
 	for (var row = 0; row < ROWS; row++)
 	{
-		map[row] = [];
+		
 		for (var col = 0; col < COLS; col++)
 		{
-			if(map = [0])
+			if(map[row][col])
 			{
-				var tile = {};
-				tile.x = 64*col;
-				tile.y = 64*row;
-				tile.img = wall;
-				map[row][col] = tile;
+			var tile = {};
+			tile.x = 64*col;
+			tile.y = 64*row;
+			tile.img = floor;
+			map[row][col] = tile;
 			}
 			else
 			{
-				var tile1 = {};
-				tile1.x = 64*col;
-				tile1.y = 64*row;
-				tile1.img = wall;
-				map[row][col] = tile1;
-			}
-			
+			var tile1 = {};
+			tile1.x = 64*col;
+			tile1.y = 64*row;
+			tile1.img = wall;
+			map[row][col] = tile1;	
+			}		
 		}
 	}
 	// Generate map in here.
 	updateInterval = setInterval(update, 1000/fps); // Start off at 30 frames per second.
 }
+
+console.log(wall);
 
 function movePlayer()
 {
@@ -143,7 +141,7 @@ function render()
 		}
 	}
 
-	surface.drawImage(player, playerX-32, playerY-32);
+	surface.drawImage(player, playerX-32, playerY-32, 64, 64);
 
 	player.style.left = playerX+"px";
  	player.style.top = playerY+"px";
