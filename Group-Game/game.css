@@ -1,0 +1,25 @@
+canvas
+{
+	background-image: url("img/floor.png");
+	background-size: 512px;
+	display: block;
+	margin: auto;
+}
+
+.cell
+{
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+}
+
+div
+{
+	display: none;
+}
+
+.sprite
+{
+	position: absolute;
+}
