@@ -2,8 +2,8 @@ var canvas = document.querySelector("canvas"); // Creates a link to the canvas e
 var surface = canvas.getContext("2d"); // Sets the context of the canvas to 2d, thus creating a surface on which to draw.
 
 var player = document.getElementById("player");
-var playerX = 352;
-var playerY = 352;
+var playerX = canvas.width/2;
+var playerY = canvas.height/2;
 var playerSpeed = 5;
 
 var leftPressed = false;
@@ -46,9 +46,9 @@ function update()
 function createMap()
 {
 	wall = new Image();
-	wall.src = "img/wall.png";
+	wall.src = "img/wall_1.png";
 	floor = new Image();
-	floor.src = "img/grass.png";
+	floor.src = "img/transparent.png";
 	
 	for (var row = 0; row < ROWS; row++)
 	{
@@ -81,13 +81,13 @@ console.log(wall);
 
 function movePlayer()
 {
-    if (leftPressed == true)
+    if (leftPressed && playerX > 32)
     	playerX -= playerSpeed;
-  	if (rightPressed == true)
+  	if (rightPressed && playerX < canvas.width - 32)
    		playerX += playerSpeed;
-  	if (upPressed == true)
+  	if (upPressed && playerY > 32)
   		playerY -= playerSpeed;
- 	if (downPressed == true)
+ 	if (downPressed && playerY < canvas.height - 32)
     	playerY += playerSpeed;
 }
 
@@ -137,12 +137,11 @@ function render()
 	{
 		for ( var col = 0; col < COLS; col++)
 		{
-			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y);
+			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
 		}
 	}
 
 	surface.drawImage(player, playerX-32, playerY-32, 64, 64);
 
-	player.style.left = playerX+"px";
- 	player.style.top = playerY+"px";
+	
 }
