@@ -11,13 +11,16 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
+var imgStr = ["wall_1", "transparent", "wall"];
+var images = [];
+
 var map =
 [
 	[0,0,0,0,0,0,0,0,0,0,0],
 	[0,1,1,1,0,1,1,1,1,1,0],
 	[0,1,0,1,0,1,0,1,0,1,0],
 	[0,1,0,1,1,1,0,1,0,1,0],
-	[0,1,0,0,0,0,0,1,0,1,0],
+	[0,1,0,1,0,0,0,1,0,1,0],
 	[0,1,0,1,0,1,1,1,0,0,0],
 	[0,1,0,1,0,0,0,0,0,1,0],
 	[0,1,0,1,1,1,1,1,0,1,0],
@@ -45,32 +48,22 @@ function update()
 
 function createMap()
 {
-	wall = new Image();
-	wall.src = "img/wall_1.png";
-	floor = new Image();
-	floor.src = "img/transparent.png";
+	for(var i = 0; i < imgStr.length; i++)
+	{
+		images[i] = new Image();
+		images[i].src = "img/"+imgStr[i]+".png";
+	}
 	
 	for (var row = 0; row < ROWS; row++)
 	{
 		
 		for (var col = 0; col < COLS; col++)
 		{
-			if(map[row][col])
-			{
 			var tile = {};
 			tile.x = 64*col;
 			tile.y = 64*row;
-			tile.img = floor;
-			map[row][col] = tile;
-			}
-			else
-			{
-			var tile1 = {};
-			tile1.x = 64*col;
-			tile1.y = 64*row;
-			tile1.img = wall;
-			map[row][col] = tile1;	
-			}		
+			tile.img = images[map[row][col]];
+			map[row][col] = tile;		
 		}
 	}
 	updateInterval = setInterval(update, 1000/fps); // Start off at 30 frames per second.
