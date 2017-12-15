@@ -1,10 +1,10 @@
-var canvas = document.querySelector("canvas"); // Creates a link to the canvas element in html
-var surface = canvas.getContext("2d"); // Sets the context of the canvas to 2d, thus creating a surface on which to draw.
+var canvas = document.querySelector("canvas");
+var surface = canvas.getContext("2d");
 
 var player = document.getElementById("player");
 var playerX = canvas.width/2;
 var playerY = canvas.height/2;
-var playerSpeed = 5;
+var playerSpeed = 1;
 
 var leftPressed = false;
 var rightPressed = false;
@@ -73,11 +73,8 @@ function createMap()
 			}		
 		}
 	}
-	// Generate map in here.
 	updateInterval = setInterval(update, 1000/fps); // Start off at 30 frames per second.
 }
-
-console.log(wall);
 
 function movePlayer()
 {
@@ -96,16 +93,20 @@ function onKeyDown(event)
 	switch (event.keyCode)
 	{
 	    case 65: // A
-	    	leftPressed = true; 
+	    	leftPressed = true;
+	    	player.src = "img/playerL.png" 
 	    	break;
 	    case 68: // D
 	    	rightPressed = true;
+	    	player.src = "img/playerR.png"
 	    	break;
 	    case 87: // W
 	    	upPressed = true;
+	    	player.src = "img/playerU.png"
 	    	break;
 	    case 83: // S
 	    	downPressed = true;
+	    	player.src = "img/playerD.png"
 	    	break;
 	}
 }
@@ -140,8 +141,5 @@ function render()
 			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
 		}
 	}
-
-	surface.drawImage(player, playerX-32, playerY-32, 64, 64);
-
-	
+	surface.drawImage(player, playerX-24, playerY-24, 48, 48);
 }
