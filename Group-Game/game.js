@@ -1,32 +1,36 @@
 var canvas = document.querySelector("canvas");
 var surface = canvas.getContext("2d");
 
-var player = document.getElementById("player");
-var playerX = canvas.width/2;
-var playerY = canvas.height/2;
+var player = {x:canvas.width/2-32, y:canvas.height/2-32};
+player.image = new Image();
+player.image.src = "img/playerR.png"
 var playerSpeed = 1;
+
+var rock = {x:64, y:64};
+rock.image = new Image();
+rock.image.src = "img/rock.png";
 
 var leftPressed = false;
 var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var imgStr = ["wall_1", "transparent", "wall"];
+var imgStr = ["transparent", "wall_1", "wall"];
 var images = [];
 
 var map =
 [
-	[0,0,0,0,0,0,0,0,0,0,0],
-	[0,1,1,1,0,1,1,1,1,1,0],
-	[0,1,0,1,0,1,0,1,0,1,0],
-	[0,1,0,1,1,1,0,1,0,1,0],
-	[0,1,0,1,0,0,0,1,0,1,0],
-	[0,1,0,1,0,1,1,1,0,0,0],
-	[0,1,0,1,0,0,0,0,0,1,0],
-	[0,1,0,1,1,1,1,1,0,1,0],
-	[0,1,0,0,1,0,0,0,0,1,0],
-	[0,1,1,1,1,1,1,1,1,1,0],
-	[0,0,0,0,0,0,0,0,0,0,0]
+	[1,1,1,1,1,1,1,1,1,1,1],
+	[1,0,0,0,1,0,0,0,0,0,1],
+	[1,0,1,0,1,0,1,0,1,0,1],
+	[1,0,1,0,0,0,1,0,1,0,1],
+	[1,0,1,0,1,1,1,0,1,0,1],
+	[1,0,1,0,1,0,0,0,1,1,1],
+	[1,0,1,0,1,1,1,1,1,0,1],
+	[1,0,1,0,0,0,0,0,1,0,1],
+	[1,0,1,1,0,1,1,1,1,0,1],
+	[1,0,0,0,0,0,0,0,0,0,1],
+	[1,1,1,1,1,1,1,1,1,1,1]
 ];
 
 var ROWS = map.length;
@@ -44,6 +48,7 @@ function update()
 {
 	render();
 	movePlayer();
+	checkCollision();
 }
 
 function createMap()
@@ -66,19 +71,26 @@ function createMap()
 			map[row][col] = tile;		
 		}
 	}
-	updateInterval = setInterval(update, 1000/fps); // Start off at 30 frames per second.
+	updateInterval = setInterval(update, 1000/fps);
 }
 
 function movePlayer()
 {
-    if (leftPressed && playerX > 32)
-    	playerX -= playerSpeed;
-  	if (rightPressed && playerX < canvas.width - 32)
-   		playerX += playerSpeed;
-  	if (upPressed && playerY > 32)
-  		playerY -= playerSpeed;
- 	if (downPressed && playerY < canvas.height - 32)
-    	playerY += playerSpeed;
+	
+	if (leftPressed && player.x > 32)
+	    player.x -= playerSpeed;
+	if (rightPressed && player.x < canvas.width - 32)
+	    player.x += playerSpeed;
+	if (upPressed && player.y > 32)
+		player.y -= playerSpeed;
+	if (downPressed && player.y < canvas.height - 32)
+   		player.y += playerSpeed;
+}
+
+function checkCollision()
+{
+	if (!( player.y > rock.y+64 || player.y+64 < rock.y || player.x > rock.x+64 || player.x+64 < rock.x ))
+		console.log("collision");
 }
 
 function onKeyDown(event)
@@ -87,19 +99,19 @@ function onKeyDown(event)
 	{
 	    case 65: // A
 	    	leftPressed = true;
-	    	player.src = "img/playerL.png" 
+	    	player.image.src = "img/playerL.png" 
 	    	break;
 	    case 68: // D
 	    	rightPressed = true;
-	    	player.src = "img/playerR.png"
+	    	player.image.src = "img/playerR.png"
 	    	break;
 	    case 87: // W
 	    	upPressed = true;
-	    	player.src = "img/playerU.png"
+	    	player.image.src = "img/playerU.png"
 	    	break;
 	    case 83: // S
 	    	downPressed = true;
-	    	player.src = "img/playerD.png"
+	    	player.image.src = "img/playerD.png"
 	    	break;
 	}
 }
@@ -134,5 +146,6 @@ function render()
 			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
 		}
 	}
-	surface.drawImage(player, playerX-24, playerY-24, 48, 48);
+	surface.drawImage(player.image, player.x, player.y, 64, 64);
+	surface.drawImage(rock.image, rock.x, rock.y, 64, 64);
 }
