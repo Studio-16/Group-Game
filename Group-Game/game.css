@@ -1,7 +1,5 @@
 canvas
 {
-	background-image: url("img/floor.png");
-	background-size: 512px;
 	display: block;
 	margin: auto;
 }
