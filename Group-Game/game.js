@@ -1,7 +1,9 @@
 var canvas = document.querySelector("canvas");
 var surface = canvas.getContext("2d");
 
-var player = {x:canvas.width/2-24, y:canvas.height/2-24};
+var mapSize = 1600;
+
+var player = {x:mapSize/2-24, y:mapSize/2-24};
 player.image = new Image();
 player.image.src = "img/playerR.png"
 var playerSpeed = 1;
@@ -11,28 +13,40 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var mapSize = 960;
-
-var imgStr = ["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR", "wallX", "wallY", "cornerTopL", "cornerTopR", "cornerBotL", "cornerBotR"];
+var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
+/*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
+/*Starts at 16*/ "wallX", "wallY", "cornerTopL", "cornerTopR", "cornerBotL", "cornerBotR",
+/*Starts at 22*/ "waterM", "waterU", "waterD", "waterL", "waterR", "waterTopL", "waterTopR", "waterBotL", "waterBotR",
+/*Starts at 31*/ "waterHorL", "waterHorM", "waterHorR", "waterVertU", "waterVertM", "waterVertD", "waterDot",];
 var images = [];
 
 var map =
 [
-	[11,9,9,9,9,9,9,9,9,9,9,9,9,9,12],
-	[10,5,1,1,1,1,1,1,1,1,1,1,1,6,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
-	[10,7,2,2,2,2,2,2,2,2,2,2,2,8,10],
-	[13,9,9,9,9,9,9,9,9,9,9,9,9,9,14]
+	[18,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
+	[17,5,1,1,11,27,23,23,23,28,5,1,1,1,1,1,1,1,1,1,1,1,1,6,17],
+	[17,3,0,4,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,0,4,25,22,22,22,26,5,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,0,8,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,3,8,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,13,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,13,25,22,22,22,26,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,14,25,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,31,24,24,24,30,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,17],
+	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],
 	
 ];
 
@@ -77,24 +91,16 @@ function createMap()
 	updateInterval = setInterval(update, 1000/fps);
 }
 
-function Screen(tag, width, height) 
-{
-	this.width = width;
-	this.height = height;
-	this.top = 0;
-	this.left = 0;
-}
-
 function movePlayer()
 {
 	
-	if (leftPressed && player.x > 0)
+	if (leftPressed && player.x > 64)
 	    player.x -= playerSpeed;
-	if (rightPressed && player.x < mapSize - 48)
+	if (rightPressed && player.x < mapSize - 112)
 	    player.x += playerSpeed;
-	if (upPressed && player.y > 0)
+	if (upPressed && player.y > 64)
 		player.y -= playerSpeed;
-	if (downPressed && player.y < mapSize - 48)
+	if (downPressed && player.y < mapSize - 112)
    		player.y += playerSpeed;
 }
 
@@ -150,7 +156,7 @@ function render()
 {
 	surface.clearRect(0,0,mapSize,mapSize);
 	surface.setTransform(1,0,0,1,0,0);
-	surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.width/2-24);
+	surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.height/2-24);
 
 	for (var row = 0; row < ROWS; row++)
 	{
