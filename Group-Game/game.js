@@ -11,21 +11,28 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
+var mapSize = 960;
+
 var imgStr = ["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR", "wallX", "wallY", "cornerTopL", "cornerTopR", "cornerBotL", "cornerBotR"];
 var images = [];
 
 var map =
 [
-	[11,9,9,9,9,9,9,9,9,12],
-	[10,5,1,1,1,1,1,1,6,10],
-	[10,3,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,4,10],
-	[10,3,0,0,0,0,0,0,4,10],
-	[10,7,2,2,2,2,2,2,8,10],
-	[13,9,9,9,9,9,9,9,9,14]
+	[11,9,9,9,9,9,9,9,9,9,9,9,9,9,12],
+	[10,5,1,1,1,1,1,1,1,1,1,1,1,6,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,3,0,0,0,0,0,0,0,0,0,0,0,4,10],
+	[10,7,2,2,2,2,2,2,2,2,2,2,2,8,10],
+	[13,9,9,9,9,9,9,9,9,9,9,9,9,9,14]
 	
 ];
 
@@ -44,7 +51,7 @@ function update()
 {
 	render();
 	movePlayer();
-	checkCollision();
+	//checkCollision();
 }
 
 function createMap()
@@ -70,24 +77,32 @@ function createMap()
 	updateInterval = setInterval(update, 1000/fps);
 }
 
+function Screen(tag, width, height) 
+{
+	this.width = width;
+	this.height = height;
+	this.top = 0;
+	this.left = 0;
+}
+
 function movePlayer()
 {
 	
 	if (leftPressed && player.x > 0)
 	    player.x -= playerSpeed;
-	if (rightPressed && player.x < canvas.width - 48)
+	if (rightPressed && player.x < mapSize - 48)
 	    player.x += playerSpeed;
 	if (upPressed && player.y > 0)
 		player.y -= playerSpeed;
-	if (downPressed && player.y < canvas.height - 48)
+	if (downPressed && player.y < mapSize - 48)
    		player.y += playerSpeed;
 }
 
-function checkCollision()
+/*function checkCollision()
 {
 	if (!( player.y > rock.y+64 || player.y+64 < rock.y || player.x > rock.x+64 || player.x+64 < rock.x ))
 		console.log("collision");
-}
+}*/
 
 function onKeyDown(event)
 {
@@ -133,7 +148,9 @@ function onKeyUp(event)
 
 function render()
 {
-	surface.clearRect(0,0,canvas.width,canvas.height);
+	surface.clearRect(0,0,mapSize,mapSize);
+	surface.setTransform(1,0,0,1,0,0);
+	surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.width/2-24);
 
 	for (var row = 0; row < ROWS; row++)
 	{
