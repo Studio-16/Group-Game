@@ -3,10 +3,12 @@ var surface = canvas.getContext("2d");
 
 var mapSize = 1600;
 
-var player = {x:mapSize/2-24, y:mapSize/2-24};
+var player = {x:mapSize/2-24, y:mapSize/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64};
 player.image = new Image();
-player.image.src = "img/playerR.png"
-var playerSpeed = 1;
+player.image.src = "img/characterSheet.png"
+
+var currentFrame = 0;
+var maxFrames = 60;
 
 var leftPressed = false;
 var rightPressed = false;
@@ -45,8 +47,8 @@ var map =
 	[17,3,8,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
 	[17,13,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
 	[17,13,25,22,22,22,26,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,14,25,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,31,24,24,24,30,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,17],
+	[17,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
+	[17,29,24,24,24,30,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,17],
 	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],
 	
 ];
@@ -66,6 +68,7 @@ function update()
 {
 	render();
 	movePlayer();
+	animate();
 	//checkCollision();
 }
 
@@ -96,13 +99,27 @@ function movePlayer()
 {
 	
 	if (leftPressed && player.x > 64)
-	    player.x -= playerSpeed;
+	{
+	    player.x -= player.speed;
+	    player.dir = 3;
+	}
 	if (rightPressed && player.x < mapSize - 112)
-	    player.x += playerSpeed;
+	{
+	    player.x += player.speed;
+	    player.dir = 1;
+	}
 	if (upPressed && player.y > 64)
-		player.y -= playerSpeed;
-	if (downPressed && player.y < mapSize - 112)
-   		player.y += playerSpeed;
+	{
+		player.y -= player.speed;
+		player.dir = 0;
+	}
+	if (downPressed && player.y < mapSize - 128)
+	{
+   		player.y += player.speed;
+   		player.dir = 2;
+	}
+	if(player.idle == true)
+		player.frame = 0;
 }
 
 /*function checkCollision()
@@ -117,19 +134,19 @@ function onKeyDown(event)
 	{
 	    case 65: // A
 	    	leftPressed = true;
-	    	player.image.src = "img/playerL.png" 
+	    	player.idle = false;
 	    	break;
 	    case 68: // D
 	    	rightPressed = true;
-	    	player.image.src = "img/playerR.png"
+	    	player.idle = false;
 	    	break;
 	    case 87: // W
 	    	upPressed = true;
-	    	player.image.src = "img/playerU.png"
+	    	player.idle = false;
 	    	break;
 	    case 83: // S
 	    	downPressed = true;
-	    	player.image.src = "img/playerD.png"
+	    	player.idle = false;
 	    	break;
 	}
 }
@@ -139,17 +156,36 @@ function onKeyUp(event)
 	switch (event.keyCode)
 	{
 	    case 65: // A
-	    	leftPressed = false; 
+	    	leftPressed = false;
+	    	player.idle = true; 
 	    	break;
 	    case 68: // D
 	    	rightPressed = false;
+	    	player.idle = true; 
 	    	break;
 	    case 87: // W
 	    	upPressed = false;
+	    	player.idle = true; 
 	    	break;
 	    case 83: // S
 	    	downPressed = false;
+	    	player.idle = true; 
 	    	break;
+	}
+}
+
+function animate()
+{
+	if (leftPressed || rightPressed || upPressed || downPressed)
+	{
+		currentFrame++;
+		if (currentFrame == maxFrames)
+		{
+			player.frame++;
+			currentFrame = 0;
+			if (player.frame == 3)
+				player.frame = 1;
+		}
 	}
 }
 
@@ -166,5 +202,5 @@ function render()
 			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
 		}
 	}
-	surface.drawImage(player.image, player.x, player.y, 48, 48);
+	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
 }
