@@ -6,6 +6,7 @@ var mapSize = 1600;
 var player = {x:mapSize/2-24, y:mapSize/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64};
 player.image = new Image();
 player.image.src = "img/characterSheet.png"
+var oldPosition = {x:player.x, y:player.y};
 
 var currentFrame = 0;
 var maxFrames = 60;
@@ -14,6 +15,14 @@ var leftPressed = false;
 var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
+
+var endTime = 9;
+var currentTime = 0;
+var endTimer = setInterval(endGameTimer, 1000);
+
+var inventory = [];
+var mapFarm = [];
+var mapWater = [];
 
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
@@ -69,7 +78,7 @@ function update()
 	render();
 	movePlayer();
 	animate();
-	//checkCollision();
+	checkCollision();
 }
 
 function createMap()
@@ -89,6 +98,17 @@ function createMap()
 			tile.x = 64*col;
 			tile.y = 64*row;
 			tile.img = images[map[row][col]];
+			if (map[row][col] == 22 || map[row][col] == 23 || map[row][col] == 24 || map[row][col] == 25 ||
+				map[row][col] == 26 || map[row][col] == 27 || map[row][col] == 28 || map[row][col] == 29 || 
+				map[row][col] == 30 || map[row][col] == 31 || map[row][col] == 32 || map[row][col] == 33 || 
+				map[row][col] == 34 || map[row][col] == 35 || map[row][col] == 36 || map[row][col] == 37) 
+			{
+				mapWater.push(tile);
+			}
+			if (map[row][col] == 38 || map[row][col] == 39 || map[row][col] == 40) 
+			{
+				mapFarm.push(tile);
+			}
 			map[row][col] = tile;		
 		}
 	}
@@ -96,8 +116,7 @@ function createMap()
 }
 
 function movePlayer()
-{
-	
+{	
 	if (leftPressed && player.x > 64)
 	{
 	    player.x -= player.speed;
@@ -122,11 +141,32 @@ function movePlayer()
 		player.frame = 0;
 }
 
-/*function checkCollision()
+function checkCollision()
 {
-	if (!( player.y > rock.y+64 || player.y+64 < rock.y || player.x > rock.x+64 || player.x+64 < rock.x ))
-		console.log("collision");
-}*/
+	for (var ctr = 0; ctr < mapFarm.length; ctr++) 
+	{
+		if (player.x + player.xSize > mapFarm[ctr].x && player.x < mapFarm[ctr].x + 64 && player.y + player.ySize > mapFarm[ctr].y && player.y < mapFarm[ctr].y + 64) 
+		{
+			if (!inventory.includes("Food")) 
+			{
+				inventory.push("Food");
+				console.log("Food Collected");
+			}
+			console.log("Collide With Farm");
+		}
+	}
+	for (var ctr = 0; ctr < mapWater.length; ctr++) 
+	{
+		if (player.x + player.xSize > mapWater[ctr].x && player.x < mapWater[ctr].x + 64 && player.y + player.ySize > mapWater[ctr].y && player.y < mapWater[ctr].y + 64) 
+		{
+			player.x = oldPosition.x;
+			player.y = oldPosition.y;
+			console.log("Collide With Water");
+		}
+	}	
+	oldPosition.x = player.x;
+	oldPosition.y = player.y;
+}
 
 function onKeyDown(event)
 {
@@ -186,6 +226,35 @@ function animate()
 			if (player.frame == 3)
 				player.frame = 1;
 		}
+	}
+}
+
+function endGameTimer() 
+{
+	var timeMinutes = Math.floor((endTime - currentTime)/60);
+	var timeSeconds = (endTime - currentTime) - timeMinutes * 60;
+	
+	if (currentTime <= endTime) {
+		document.getElementById("timer").innerHTML = "Time Left: " + timeMinutes + " : " + timeSeconds;
+		currentTime++;
+	}
+	else if (currentTime > endTime) {
+		gameOver();
+	}	
+}
+
+function gameOver() 
+{
+	clearInterval(endTimer);
+	if (inventory.includes("Food"))
+	{
+		document.getElementById("endGame").innerHTML = "You Got The Food! You Win!";
+		clearInterval(updateInterval);	
+	}
+	else 
+	{
+		document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
+		clearInterval(updateInterval);
 	}
 }
 

@@ -1,6 +1,30 @@
+body
+{
+	background-color: limegreen;
+}
+
 canvas
 {
 	background-color: black; 
 	display: block;
 	margin: auto;
+}
+
+#timer
+{
+	position: fixed;
+	text-align: center;
+	left: 100px;
+	right: 100px;
+	color: white;
+}
+
+#endGame
+{
+	position: fixed;
+	text-align: center;
+	left: 100px;
+	right: 100px;
+	top: 275px;
+	color: white;	
 }
