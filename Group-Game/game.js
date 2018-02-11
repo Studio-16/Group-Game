@@ -3,10 +3,18 @@ var surface = canvas.getContext("2d");
 
 var mapSize = 1600;
 
-var player = {x:mapSize/2-24, y:mapSize/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64};
+var player = {x:mapSize/2-24, y:mapSize/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
 player.image = new Image();
-player.image.src = "img/characterSheet.png"
+player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
+
+var enemy = {x:900, y:900 }
+enemy.image = new Image();
+enemy.image.src = "img/enemy.png";
+
+var foodPickup = {x:1152, y:512}
+foodPickup.image = new Image();
+foodPickup.image.src = "img/carrot.png";
 
 var currentFrame = 0;
 var maxFrames = 60;
@@ -79,6 +87,7 @@ function update()
 	movePlayer();
 	animate();
 	checkCollision();
+	//enemyMovement();
 }
 
 function createMap()
@@ -141,9 +150,14 @@ function movePlayer()
 		player.frame = 0;
 }
 
+/*function enemyMovement()
+{
+	enemy.x = enemy.x ;
+}*/
+
 function checkCollision()
 {
-	for (var ctr = 0; ctr < mapFarm.length; ctr++) 
+	/*for (var ctr = 0; ctr < mapFarm.length; ctr++) 
 	{
 		if (player.x + player.xSize > mapFarm[ctr].x && player.x < mapFarm[ctr].x + 64 && player.y + player.ySize > mapFarm[ctr].y && player.y < mapFarm[ctr].y + 64) 
 		{
@@ -154,6 +168,15 @@ function checkCollision()
 			}
 			console.log("Collide With Farm");
 		}
+	}*/
+	if (player.x + player.xSize > foodPickup.x && player.x < foodPickup.x + 64 && player.y + player.ySize > foodPickup.y && player.y < foodPickup.y + 64)
+	{
+		if (!inventory.includes("Food")) 
+			{
+				inventory.push("Food");
+				console.log("Food Collected");
+			}
+			console.log("Food");
 	}
 	for (var ctr = 0; ctr < mapWater.length; ctr++) 
 	{
@@ -271,5 +294,10 @@ function render()
 			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
 		}
 	}
+	if (!inventory.includes("Food"))
+	{
+		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
+	}	
 	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
+	surface.drawImage(enemy.image, enemy.x, enemy.y);
 }
