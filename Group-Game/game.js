@@ -8,7 +8,7 @@ player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {x:900, y:900 }
+var enemy = {speed:.5, x:1416, y:512, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 
@@ -66,8 +66,7 @@ var map =
 	[17,13,25,22,22,22,26,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
 	[17,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
 	[17,29,24,24,24,30,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,17],
-	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],
-	
+	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],	
 ];
 
 var ROWS = map.length;
@@ -87,7 +86,7 @@ function update()
 	movePlayer();
 	animate();
 	checkCollision();
-	//enemyMovement();
+	enemyMovement();
 }
 
 function createMap()
@@ -96,11 +95,9 @@ function createMap()
 	{
 		images[i] = new Image();
 		images[i].src = "img/"+imgStr[i]+".png";
-	}
-	
+	}	
 	for (var row = 0; row < ROWS; row++)
-	{
-		
+	{	
 		for (var col = 0; col < COLS; col++)
 		{
 			var tile = {};
@@ -150,25 +147,27 @@ function movePlayer()
 		player.frame = 0;
 }
 
-/*function enemyMovement()
+function enemyMovement()
 {
-	enemy.x = enemy.x ;
-}*/
+	enemy.dx = player.x - enemy.x;
+	enemy.dy = player.y - enemy.y;
+	enemy.distance = Math.sqrt(enemy.dx*enemy.dx + enemy.dy*enemy.dy);
+	enemy.angle = Math.atan2(enemy.dy, enemy.dx)* 180/Math.PI;
+	enemy.speedX = enemy.speed * (enemy.dx / enemy.distance);
+	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);
+	if (enemy.distance < 400)
+	{
+		enemy.x += enemy.speedX;
+		enemy.y += enemy.speedY;
+	}
+	console.log("dx: "+enemy.dx);
+	console.log("dy: "+enemy.dy);
+	console.log("Distance: "+enemy.distance);
+	console.log("Angle: "+enemy.angle)
+}
 
 function checkCollision()
 {
-	/*for (var ctr = 0; ctr < mapFarm.length; ctr++) 
-	{
-		if (player.x + player.xSize > mapFarm[ctr].x && player.x < mapFarm[ctr].x + 64 && player.y + player.ySize > mapFarm[ctr].y && player.y < mapFarm[ctr].y + 64) 
-		{
-			if (!inventory.includes("Food")) 
-			{
-				inventory.push("Food");
-				console.log("Food Collected");
-			}
-			console.log("Collide With Farm");
-		}
-	}*/
 	if (player.x + player.xSize > foodPickup.x && player.x < foodPickup.x + 64 && player.y + player.ySize > foodPickup.y && player.y < foodPickup.y + 64)
 	{
 		if (!inventory.includes("Food")) 
@@ -176,7 +175,15 @@ function checkCollision()
 				inventory.push("Food");
 				console.log("Food Collected");
 			}
-			console.log("Food");
+			console.log("Collide With Food");
+	}
+	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
+	{
+		clearInterval(updateInterval);
+		clearInterval(endTimer);
+		document.getElementById("endGame").style.color = "red";
+		document.getElementById("endGame").innerHTML = "You Died...";
+		console.log("Collide With Enemy");
 	}
 	for (var ctr = 0; ctr < mapWater.length; ctr++) 
 	{
@@ -257,28 +264,24 @@ function endGameTimer()
 	var timeMinutes = Math.floor((endTime - currentTime)/60);
 	var timeSeconds = (endTime - currentTime) - timeMinutes * 60;
 	
-	if (currentTime <= endTime) {
+	if (currentTime <= endTime) 
+	{
 		document.getElementById("timer").innerHTML = "Time Left: " + timeMinutes + " : " + timeSeconds;
 		currentTime++;
 	}
-	else if (currentTime > endTime) {
-		gameOver();
-	}	
+	else if (currentTime > endTime) 
+		gameOver();	
 }
 
 function gameOver() 
 {
+	clearInterval(updateInterval);
 	clearInterval(endTimer);
+
 	if (inventory.includes("Food"))
-	{
 		document.getElementById("endGame").innerHTML = "You Got The Food! You Win!";
-		clearInterval(updateInterval);	
-	}
 	else 
-	{
 		document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
-		clearInterval(updateInterval);
-	}
 }
 
 function render()
@@ -290,14 +293,11 @@ function render()
 	for (var row = 0; row < ROWS; row++)
 	{
 		for ( var col = 0; col < COLS; col++)
-		{
 			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
-		}
 	}
 	if (!inventory.includes("Food"))
-	{
 		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
-	}	
+
 	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
 	surface.drawImage(enemy.image, enemy.x, enemy.y);
 }
