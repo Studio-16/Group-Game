@@ -1,5 +1,6 @@
 var canvas = document.querySelector("canvas");
 var surface = canvas.getContext("2d");
+var canvasInventory = document.getElementById("inventory").getContext('2d');
 
 var mapSize = 1600;
 
@@ -24,13 +25,13 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var endTime = 9;
+var endTime = 19;
 var currentTime = 0;
 var endTimer = setInterval(endGameTimer, 1000);
 
 var inventory = [];
 var mapFarm = [];
-var mapWater = [];
+var mapCollidable = [];
 
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
@@ -104,12 +105,14 @@ function createMap()
 			tile.x = 64*col;
 			tile.y = 64*row;
 			tile.img = images[map[row][col]];
-			if (map[row][col] == 22 || map[row][col] == 23 || map[row][col] == 24 || map[row][col] == 25 ||
-				map[row][col] == 26 || map[row][col] == 27 || map[row][col] == 28 || map[row][col] == 29 || 
-				map[row][col] == 30 || map[row][col] == 31 || map[row][col] == 32 || map[row][col] == 33 || 
-				map[row][col] == 34 || map[row][col] == 35 || map[row][col] == 36 || map[row][col] == 37) 
+			if (map[row][col] == 16 || map[row][col] == 17 || map[row][col] == 18 || map[row][col] == 19 ||
+				map[row][col] == 20 || map[row][col] == 21 || map[row][col] == 22 || map[row][col] == 23 || 
+				map[row][col] == 24 || map[row][col] == 25 || map[row][col] == 26 || map[row][col] == 27 ||
+				map[row][col] == 28 || map[row][col] == 29 || map[row][col] == 30 || map[row][col] == 31 || 
+				map[row][col] == 32 || map[row][col] == 33 || map[row][col] == 34 || map[row][col] == 35 ||
+				map[row][col] == 36 || map[row][col] == 37) 
 			{
-				mapWater.push(tile);
+				mapCollidable.push(tile);
 			}
 			if (map[row][col] == 38 || map[row][col] == 39 || map[row][col] == 40) 
 			{
@@ -123,22 +126,22 @@ function createMap()
 
 function movePlayer()
 {	
-	if (leftPressed && player.x > 64)
+	if (leftPressed)
 	{
 	    player.x -= player.speed;
 	    player.dir = 3;
 	}
-	if (rightPressed && player.x < mapSize - 112)
+	if (rightPressed)
 	{
 	    player.x += player.speed;
 	    player.dir = 1;
 	}
-	if (upPressed && player.y > 64)
+	if (upPressed)
 	{
 		player.y -= player.speed;
 		player.dir = 0;
 	}
-	if (downPressed && player.y < mapSize - 128)
+	if (downPressed)
 	{
    		player.y += player.speed;
    		player.dir = 2;
@@ -172,7 +175,7 @@ function checkCollision()
 	{
 		if (!inventory.includes("Food")) 
 			{
-				inventory.push("Food");
+				inventory.push(foodPickup);
 				console.log("Food Collected");
 			}
 			console.log("Collide With Food");
@@ -185,13 +188,13 @@ function checkCollision()
 		document.getElementById("endGame").innerHTML = "You Died...";
 		console.log("Collide With Enemy");
 	}
-	for (var ctr = 0; ctr < mapWater.length; ctr++) 
+	for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
 	{
-		if (player.x + player.xSize > mapWater[ctr].x && player.x < mapWater[ctr].x + 64 && player.y + player.ySize > mapWater[ctr].y && player.y < mapWater[ctr].y + 64) 
+		if (player.x + player.xSize > mapCollidable[ctr].x && player.x < mapCollidable[ctr].x + 64 && player.y + player.ySize > mapCollidable[ctr].y && player.y < mapCollidable[ctr].y + 64) 
 		{
 			player.x = oldPosition.x;
 			player.y = oldPosition.y;
-			console.log("Collide With Water");
+			console.log("Collide With Tile");
 		}
 	}	
 	oldPosition.x = player.x;
@@ -278,7 +281,7 @@ function gameOver()
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
 
-	if (inventory.includes("Food"))
+	if (inventory.includes(foodPickup))
 		document.getElementById("endGame").innerHTML = "You Got The Food! You Win!";
 	else 
 		document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
@@ -295,7 +298,10 @@ function render()
 		for ( var col = 0; col < COLS; col++)
 			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
 	}
-	if (!inventory.includes("Food"))
+	for (var ctr = 0; ctr < inventory.length; ctr++) 
+		canvasInventory.drawImage(inventory[ctr].image, (ctr * 64), (ctr * 64), 64, 64);
+
+	if (!inventory.includes(foodPickup))
 		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
 
 	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
