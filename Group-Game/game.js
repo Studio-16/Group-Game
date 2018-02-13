@@ -173,7 +173,7 @@ function checkCollision()
 {
 	if (player.x + player.xSize > foodPickup.x && player.x < foodPickup.x + 64 && player.y + player.ySize > foodPickup.y && player.y < foodPickup.y + 64)
 	{
-		if (!inventory.includes("Food")) 
+		if (!inventory.includes(foodPickup)) 
 			{
 				inventory.push(foodPickup);
 				console.log("Food Collected");
