@@ -12,6 +12,7 @@ var oldPosition = {x:player.x, y:player.y};
 var enemy = {speed:.5, x:1416, y:512, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
+var deathSound = new Audio ("audio/death-scream.wav");
 
 var foodPickup = {x:1152, y:512}
 foodPickup.image = new Image();
@@ -40,7 +41,8 @@ var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "f
 /*Starts at 31*/ "waterHorL", "waterHorM", "waterHorR", "waterVertU", "waterVertM", "waterVertD", "waterDot",
 /*Starts at 38*/ "farmU", "farmM", "farmD",
 /*Starts at 41*/ "mFloorM", "mFloorU", "mFloorD", "mFloorL", "mFloorR", "mFloorTopL", "mFloorTopR", "mFloorBotL", "mFloorBotR",
-/*Starts at 50*/ "mFloorHorL", "mFloorHorM", "mFloorHorR", "mFloorVertU", "mFloorVertM", "mFloorVertD", "mFloorDot"];
+/*Starts at 50*/ "mFloorHorL", "mFloorHorM", "mFloorHorR", "mFloorVertU", "mFloorVertM", "mFloorVertD", "mFloorDot",
+/*Starts at 57*/ "tWallM", "tWallU", "tWallD", "tWallL", "tWallR", "wall"];
 var images = [];
 
 var map =
@@ -77,6 +79,7 @@ var COLS = map[0].length;
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
+//window.addEventListener("playerAttack", mouseDown);
 
 createMap();
 
@@ -152,6 +155,11 @@ function movePlayer()
 		player.frame = 0;
 }
 
+function playerAttack()
+{
+
+}
+
 function enemyMovement()
 {
 	enemy.dx = player.x - enemy.x;
@@ -184,6 +192,7 @@ function checkCollision()
 	}
 	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
 	{
+		deathSound.play();
 		clearInterval(updateInterval);
 		clearInterval(endTimer);
 		document.getElementById("endGame").style.color = "red";
