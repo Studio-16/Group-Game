@@ -1,6 +1,12 @@
 var canvas = document.querySelector("canvas");
 var surface = canvas.getContext("2d");
-var canvasInventory = document.getElementById("inventory").getContext('2d');
+
+var elemInventory = document.getElementById("inventory");
+var canvasInventory = elemInventory.getContext('2d');
+
+var elemCraft= document.getElementById("craft");
+var canvasCraft = elemCraft.getContext('2d');
+var craftingOpen = false;
 
 var mapSize = 1600;
 
@@ -12,11 +18,24 @@ var oldPosition = {x:player.x, y:player.y};
 var enemy = {speed:.5, x:1416, y:512, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
+
 var deathSound = new Audio ("audio/death-scream.wav");
 
 var foodPickup = {x:1152, y:512}
 foodPickup.image = new Image();
 foodPickup.image.src = "img/carrot.png";
+
+var treePickup = {x: 1000, y: 1000}
+treePickup.image = new Image();
+treePickup.image.src = "img/treeSingle.png";
+
+var stickPickup = {x:0, y: 0}
+stickPickup.image = new Image();
+stickPickup.image.src = "img/stick.png";
+
+var axePickup = {x:0, y:0}
+axePickup.image = new Image();
+axePickup.image.src = "img/axe.png";
 
 var currentFrame = 0;
 var maxFrames = 60;
@@ -31,6 +50,7 @@ var currentTime = 0;
 var endTimer = setInterval(endGameTimer, 1000);
 
 var inventory = [];
+var crafting = [];
 var mapFarm = [];
 var mapCollidable = [];
 
@@ -79,6 +99,9 @@ var COLS = map[0].length;
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
+
+elemInventory.addEventListener("click", craftItem);
+
 //window.addEventListener("playerAttack", mouseDown);
 
 createMap();
@@ -127,6 +150,7 @@ function createMap()
 		}
 	}
 	updateInterval = setInterval(update, 1000/fps);
+	
 }
 
 function movePlayer()
@@ -173,10 +197,6 @@ function enemyMovement()
 		enemy.x += enemy.speedX;
 		enemy.y += enemy.speedY;
 	}
-	console.log("dx: "+enemy.dx);
-	console.log("dy: "+enemy.dy);
-	console.log("Distance: "+enemy.distance);
-	console.log("Angle: "+enemy.angle)
 }
 
 function checkCollision()
@@ -186,10 +206,17 @@ function checkCollision()
 		if (!inventory.includes(foodPickup)) 
 			{
 				inventory.push(foodPickup);
-				console.log("Food Collected");
 			}
-			console.log("Collide With Food");
 	}
+
+	if (player.x + player.xSize > treePickup.x && player.x < treePickup.x + 64 && player.y + player.ySize > treePickup.y && player.y < treePickup.y + 64)
+	{
+		if (!inventory.includes(stickPickup)) 
+			{
+				inventory.push(stickPickup);
+			}
+	}		
+	
 	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
 	{
 		deathSound.play();
@@ -197,7 +224,6 @@ function checkCollision()
 		clearInterval(endTimer);
 		document.getElementById("endGame").style.color = "red";
 		document.getElementById("endGame").innerHTML = "You Died...";
-		console.log("Collide With Enemy");
 	}
 	for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
 	{
@@ -205,7 +231,6 @@ function checkCollision()
 		{
 			player.x = oldPosition.x;
 			player.y = oldPosition.y;
-			console.log("Collide With Tile");
 		}
 	}	
 	oldPosition.x = player.x;
@@ -232,6 +257,10 @@ function onKeyDown(event)
 	    	downPressed = true;
 	    	player.idle = false;
 	    	break;
+			
+		case 69: // E
+			openCraftMenu();
+			break;
 	}
 }
 
@@ -258,6 +287,40 @@ function onKeyUp(event)
 	}
 }
 
+function openCraftMenu() {
+	craftingOpen = !craftingOpen;
+	
+	if (craftingOpen) {
+		elemCraft.style.display = "block";
+	}
+	else {
+	elemCraft.style.display = "none";
+	}
+}
+
+function craftItem(event) {
+	var mousePos = { 
+		x: event.pageX - elemInventory.offsetLeft,
+		y: event.pageY - elemInventory.offsetTop
+	}
+	
+	if (craftingOpen) {
+		for (var ctr = 0; ctr < inventory.length; ctr++) {
+			if (isIntersect(mousePos, inventory[ctr])) {
+				crafting.push(inventory[ctr]);
+				inventory.splice(ctr,1);
+			}
+		}
+	}
+}
+
+function isIntersect(point, elem) {
+	if (point.x > elem.x && point.x < elem.x + 64 && point.y > elem.y && point.y < elem.y + 64) {
+		return true;
+	}
+	else
+		return false;
+}
 function animate()
 {
 	if (leftPressed || rightPressed || upPressed || downPressed)
@@ -301,6 +364,9 @@ function gameOver()
 function render()
 {
 	surface.clearRect(0,0,mapSize,mapSize);
+	canvasCraft.clearRect(0,0, elemCraft.width, elemCraft.height);
+	canvasInventory.clearRect(0,0, elemInventory.width, elemInventory.height);
+	
 	surface.setTransform(1,0,0,1,0,0);
 	surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.height/2-24);
 
@@ -309,11 +375,24 @@ function render()
 		for ( var col = 0; col < COLS; col++)
 			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
 	}
-	for (var ctr = 0; ctr < inventory.length; ctr++) 
-		canvasInventory.drawImage(inventory[ctr].image, (ctr * 64), (ctr * 64), 64, 64);
-
-	if (!inventory.includes(foodPickup))
+	for (var ctr = 0; ctr < inventory.length; ctr++) {
+		inventory[ctr].x = ctr * 64;
+		inventory[ctr].y = 0;
+		canvasInventory.drawImage(inventory[ctr].image, inventory[ctr].x, inventory[ctr].y, 64, 64);
+	}
+	
+	for (var ctr = 0; ctr < crafting.length; ctr++) {
+		crafting[ctr].x = ctr * 64;
+		crafting[ctr].y = 0;
+		canvasCraft.drawImage(crafting[ctr].image, crafting[ctr].x, crafting[ctr].y, 64, 64);
+	}
+	
+	if (!inventory.includes(foodPickup) || !crafting.includes(foodPickup))
 		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
+	
+	if (!inventory.includes(stickPickup) || !crafting.includes(stickPickup))
+		surface.drawImage(treePickup.image, treePickup.x, treePickup.y);
+	
 
 	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
 	surface.drawImage(enemy.image, enemy.x, enemy.y);
