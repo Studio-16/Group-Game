@@ -11,9 +11,10 @@ player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0}
+var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0, size:16}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
+var enemyOldPosition = {x:enemy.x, y:enemy.y};
 var deathSound = new Audio ("audio/death-scream.wav");
 
 var boomerang = {speed:1.5, x:0, y:0, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, thrown:false, timeThrown:0, frame:0, currentFrame:0, maxFrames:15, size:32}
@@ -302,6 +303,17 @@ function checkCollision()
 	}	
 	oldPosition.x = player.x;
 	oldPosition.y = player.y;
+	for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
+	{
+		if (enemy.x + enemy.size > mapCollidable[ctr].x && enemy.x < mapCollidable[ctr].x + 64 && enemy.y + enemy.size > mapCollidable[ctr].y && enemy.y < mapCollidable[ctr].y + 64) 
+		{
+			enemy.x = enemyOldPosition.x;
+			enemy.y = enemyOldPosition.y;
+			console.log("Collide With Tile");
+		}
+	}	
+	enemyOldPosition.x = enemy.x;
+	enemyOldPosition.y = enemy.y;
 	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
 	{
 		boomerang.thrown = false;
