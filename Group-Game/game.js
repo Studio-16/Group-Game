@@ -2,31 +2,34 @@ var canvas = document.querySelector("canvas");
 var surface = canvas.getContext("2d");
 var canvasInventory = document.getElementById("inventory").getContext('2d');
 
-var mapSize = 1600;
+var mapSizeX = 3200;
+var mapSizeY = 2944;
 
-var player = {x:mapSize/2-24, y:mapSize/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
+
+var player = {x:mapSizeX/2-24, y:mapSizeY/2-24, idle:true, frame:0, currentFrame:0, dir:2, speed:1, xSize:36, ySize:48, maxFrames:60}
 player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:1416, y:512, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0}
+var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 var deathSound = new Audio ("audio/death-scream.wav");
 
-var foodPickup = {x:1152, y:512}
+var boomerang = {speed:1.5, x:0, y:0, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, thrown:false, timeThrown:0, frame:0, currentFrame:0, maxFrames:15, size:32}
+boomerang.image = new Image();
+boomerang.image.src = "img/boomerangSheet.png";
+
+var foodPickup = {x:1920, y:1152}
 foodPickup.image = new Image();
 foodPickup.image.src = "img/carrot.png";
-
-var currentFrame = 0;
-var maxFrames = 60;
 
 var leftPressed = false;
 var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var endTime = 19;
+var endTime = 59;
 var currentTime = 0;
 var endTimer = setInterval(endGameTimer, 1000);
 
@@ -42,36 +45,59 @@ var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "f
 /*Starts at 38*/ "farmU", "farmM", "farmD",
 /*Starts at 41*/ "mFloorM", "mFloorU", "mFloorD", "mFloorL", "mFloorR", "mFloorTopL", "mFloorTopR", "mFloorBotL", "mFloorBotR",
 /*Starts at 50*/ "mFloorHorL", "mFloorHorM", "mFloorHorR", "mFloorVertU", "mFloorVertM", "mFloorVertD", "mFloorDot",
-/*Starts at 57*/ "tWallM", "tWallU", "tWallD", "tWallL", "tWallR", "wall"];
+/*Starts at 57*/ "tWallM", "tWallU", "tWallD", "tWallL", "tWallR", "wall",
+/*Starts at 63*/ "doorU", "doorD", "doorL", "doorR"];
 var images = [];
 
 var map =
 [
-	[18,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
-	[17,5,1,1,11,27,23,23,23,28,5,1,1,1,1,1,1,1,10,1,10,1,10,6,17],
-	[17,3,0,4,27,22,22,22,22,30,3,0,0,0,0,0,0,4,38,13,38,13,38,13,17],
-	[17,3,0,4,25,22,22,22,26,5,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17],
-	[17,3,0,8,25,22,22,22,26,3,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17],
-	[17,3,4,27,22,22,22,22,30,3,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17],
-	[17,3,4,25,22,22,22,26,5,0,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,4,40,13,40,13,40,13,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,1,0,1,0,1,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,3,8,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,13,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,13,25,22,22,22,26,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17],
-	[17,29,24,24,24,30,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,17],
-	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],	
+	[18,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
+	[17,46,42,42,42,42,42,42,42,42,42,47,16,50,47,16,46,42,42,47,16,46,42,42,42,47,16,46,42,42,42,47,16,46,42,42,42,47,16,46,42,47,16,53,16,53,16,53,17],
+	[17,54,16,44,49,16,48,45,16,54,16,54,16,16,54,16,48,41,43,43,43,49,16,56,16,48,51,49,16,48,45,16,16,44,45,16,16,44,42,43,43,43,51,41,51,45,16,54,17],
+	[17,54,16,54,18,16,19,54,16,54,16,54,16,46,45,16,16,54,16,16,16,16,16,16,16,16,16,16,16,16,48,52,16,48,41,47,16,44,45,16,16,16,16,54,16,54,16,54,17],
+	[17,54,16,56,16,53,16,54,16,54,16,54,16,48,43,49,16,48,49,16,48,51,43,43,51,45,16,46,51,42,42,45,16,16,48,41,51,42,45,16,16,53,16,54,16,54,16,54,17],
+	[17,54,62,62,62,54,62,54,62,56,62,56,62,62,54,62,48,43,49,62,48,49,62,48,51,43,43,51,45,62,46,51,42,42,45,62,62,48,41,51,42,45,62,54,62,54,62,54,17],
+	[17,48,51,47,62,54,62,54,62,62,62,62,62,46,49,62,62,62,62,62,62,62,62,62,62,62,62,62,48,51,49,62,48,43,41,52,62,62,54,62,48,45,62,56,62,48,51,45,17],
+	[17,62,62,48,51,45,62,48,51,42,51,47,62,54,62,62,46,42,47,62,46,47,62,46,42,42,47,62,62,62,62,62,62,62,54,62,62,46,47,62,62,54,62,62,62,62,62,54,17],
+	[17,53,62,62,62,54,62,62,62,54,62,54,62,44,51,51,43,43,41,51,41,41,42,41,41,41,41,42,51,42,42,42,51,42,41,52,62,44,45,62,46,45,62,46,47,62,44,45,17],
+	[17,48,51,47,62,48,54,54,42,49,62,54,62,56,62,62,62,62,56,62,48,43,43,43,43,43,43,49,62,48,43,49,62,48,49,62,62,48,49,62,48,43,51,41,43,47,62,56,17],
+	[17,62,62,54,62,62,62,62,54,62,62,54,18,16,16,16,16,16,16,16,16,16,16,16,63,16,16,16,16,16,16,16,16,16,16,16,19,62,62,62,62,62,62,56,62,48,49,62,17],
+	[17,47,62,44,51,51,42,51,45,62,46,45,18,5,1,1,11,27,23,23,23,28,5,1,1,1,1,1,1,1,10,1,10,1,10,6,17,46,47,62,53,62,62,62,62,62,62,62,17],
+	[17,54,62,54,62,62,54,62,54,62,44,45,17,3,0,4,27,22,22,22,22,30,3,0,0,0,0,0,0,4,38,13,38,13,38,13,17,44,45,62,48,47,62,53,62,46,42,52,17],
+	[17,54,62,48,47,62,54,62,54,62,44,45,17,3,0,4,25,22,22,22,26,5,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,44,45,62,62,54,62,44,42,43,45,62,17],
+	[17,54,62,62,54,62,56,62,54,62,48,45,17,3,0,8,25,22,22,22,26,3,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,48,45,62,46,49,62,44,45,62,44,47,17],
+	[17,44,47,62,54,62,62,62,54,62,62,45,17,3,4,27,22,22,22,22,30,3,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,62,54,62,54,62,62,44,49,62,44,45,17],
+	[17,44,45,62,48,51,47,62,44,47,62,54,17,3,4,25,22,22,22,26,5,0,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,46,45,62,54,47,62,54,62,62,44,45,17],
+	[17,44,45,62,62,62,54,62,44,49,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,44,45,62,44,41,51,41,47,62,44,45,17],
+	[17,44,43,51,47,62,54,62,54,62,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,4,40,13,40,13,40,13,17,44,49,62,44,45,62,48,45,62,44,49,17],
+	[17,54,62,62,54,62,54,62,54,62,46,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,1,0,1,0,1,4,17,54,62,62,48,45,62,62,54,62,54,62,17],
+	[17,54,62,46,49,62,54,62,54,62,44,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,47,62,62,54,62,46,45,62,44,52,17],
+	[17,54,62,54,62,62,48,51,41,42,41,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,45,62,46,45,62,44,41,51,45,62,17],
+	[17,54,62,54,62,53,62,62,44,43,41,45,65,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,66,44,45,62,44,49,62,44,45,62,48,49,17],
+	[17,54,62,54,62,48,51,51,45,62,54,55,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,45,62,54,62,62,44,49,62,62,62,17],
+	[17,53,62,54,62,62,62,62,54,62,48,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,49,62,44,47,62,54,62,62,46,42,62],
+	[17,46,51,49,62,50,43,42,41,47,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,54,62,62,44,45,62,44,47,62,48,41,62],
+	[17,54,62,62,62,62,62,48,41,49,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,47,62,44,45,62,44,45,62,62,54,17],
+	[17,54,62,46,42,47,62,62,54,62,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,48,45,62,44,45,62,44,43,42,42,45,17],
+	[17,54,62,54,62,48,47,62,44,52,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,62,54,62,44,45,62,56,62,48,43,49,17],
+	[17,54,62,54,62,62,54,62,54,62,62,54,17,3,8,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,46,49,62,44,45,62,62,62,62,62,62,17],
+	[17,54,62,44,47,62,54,62,44,47,62,54,17,13,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,54,62,62,44,45,62,50,42,47,62,53,17],
+	[17,54,62,44,45,62,54,62,44,49,62,54,17,13,25,22,22,22,26,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,47,62,44,49,62,62,44,43,42,45,17],
+	[17,54,62,44,45,62,54,62,54,62,62,54,17,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,48,41,42,45,62,62,46,49,62,44,49,17],
+	[17,54,62,44,45,62,54,62,54,62,62,56,17,29,24,24,24,30,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,17,62,48,43,43,52,62,56,62,62,54,62,17],
+	[17,54,62,44,45,62,54,62,44,47,62,62,20,16,16,16,16,16,16,16,16,16,16,16,64,16,16,16,16,16,16,16,16,16,16,16,21,62,62,62,62,62,62,62,62,62,44,47,17],
+	[17,54,62,44,43,51,41,51,41,45,62,48,43,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,47,62,46,51,51,51,51,51,51,51,51,51,52,62,62,54,17],
+	[17,54,62,54,62,62,54,62,44,45,62,62,62,48,43,41,43,43,43,49,62,48,43,43,43,43,43,49,62,48,49,62,48,42,49,62,62,62,62,62,62,62,62,62,62,62,46,45,17],
+	[17,54,62,54,62,46,49,62,44,43,52,62,62,62,62,54,62,62,62,62,62,62,62,62,62,62,62,62,62,62,62,62,62,54,62,62,46,42,51,47,62,46,51,42,47,62,44,49,17],
+	[17,54,62,54,62,54,62,62,54,62,62,62,53,62,46,41,51,51,51,51,42,42,47,62,62,46,51,51,51,52,62,53,62,54,62,50,43,45,62,48,51,45,62,48,49,62,54,62,17],
+	[17,54,62,54,62,54,62,46,49,62,44,42,43,51,43,49,62,62,62,62,48,43,45,62,62,54,62,62,54,62,62,54,62,54,62,62,62,54,62,62,62,54,62,62,62,62,44,47,17],
+	[17,54,62,54,62,54,62,54,62,62,44,45,62,62,62,62,62,46,47,62,62,62,48,42,42,49,62,46,45,62,46,41,51,43,51,51,51,49,62,62,46,43,51,51,52,62,44,45,17],
+	[17,54,62,54,62,54,62,54,62,50,41,41,51,51,51,51,51,43,43,51,47,62,62,48,49,62,62,44,49,62,48,49,62,62,62,62,62,62,62,46,49,62,62,62,62,62,44,45,17],
+	[17,54,62,54,62,54,62,54,62,62,44,45,62,62,62,62,62,62,62,62,48,47,62,62,62,62,46,49,62,62,62,62,62,46,42,51,42,42,51,45,62,62,46,51,47,62,48,45,17],
+	[17,54,62,62,50,49,62,48,47,62,48,41,42,42,42,42,42,42,47,62,62,48,51,51,51,51,49,62,62,62,50,51,42,43,49,62,48,45,62,48,52,62,54,62,54,62,62,54,17],
+	[17,44,47,62,62,62,62,62,54,62,62,48,43,43,43,43,43,43,41,47,62,62,62,62,62,62,62,62,53,62,62,62,54,62,62,62,62,54,62,62,62,62,54,62,44,47,62,54,17],
+	[17,48,43,51,51,51,51,51,43,52,62,62,62,62,62,62,62,62,48,43,51,51,51,51,51,51,51,51,43,51,51,51,43,51,51,52,62,48,51,51,51,51,49,62,44,45,62,54,17],
+	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],	
 ];
 
 var ROWS = map.length;
@@ -79,7 +105,7 @@ var COLS = map[0].length;
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
-//window.addEventListener("playerAttack", mouseDown);
+canvas.addEventListener("mousedown", playerAttack);
 
 createMap();
 
@@ -92,7 +118,7 @@ function update()
 	movePlayer();
 	animate();
 	checkCollision();
-	enemyMovement();
+	objectMovement();
 }
 
 function createMap()
@@ -115,7 +141,8 @@ function createMap()
 				map[row][col] == 24 || map[row][col] == 25 || map[row][col] == 26 || map[row][col] == 27 ||
 				map[row][col] == 28 || map[row][col] == 29 || map[row][col] == 30 || map[row][col] == 31 || 
 				map[row][col] == 32 || map[row][col] == 33 || map[row][col] == 34 || map[row][col] == 35 ||
-				map[row][col] == 36 || map[row][col] == 37) 
+				map[row][col] == 36 || map[row][col] == 37 || map[row][col] == 57 || map[row][col] == 58 ||
+				map[row][col] == 59 || map[row][col] == 60 || map[row][col] == 61 || map[row][col] == 62) 
 			{
 				mapCollidable.push(tile);
 			}
@@ -155,28 +182,93 @@ function movePlayer()
 		player.frame = 0;
 }
 
-function playerAttack()
+function  getMousePos(canvas, event) 
 {
-
+	var rect = canvas.getBoundingClientRect(),
+    scaleX = canvas.width / rect.width,
+    scaleY = canvas.height / rect.height; 
+	return {
+    x: (event.clientX - rect.left) * scaleX,
+    y: (event.clientY - rect.top) * scaleY
+  }
 }
 
-function enemyMovement()
+function boomerangTimer()
+{
+	boomerang.timeThrown++;
+}
+
+function stunTimer()
+{
+	enemy.stunTime++;
+	if (enemy.stunTime > 2)
+	{
+		enemy.stun = false;
+		enemy.stunTime = 0;
+		clearInterval(timeStunned);
+	}
+}
+
+function playerAttack(e)
+{
+	if (boomerang.thrown == false)
+	{
+		var mousePosition = getMousePos(canvas, e);
+		boomerang.x = player.x;
+		boomerang.y = player.y;	
+		boomerang.thrown = true;
+		boomerang.dx = mousePosition.x - canvas.width/2;
+		boomerang.dy = mousePosition.y - canvas.height/2;
+		boomerang.angle = Math.atan2(boomerang.dx,boomerang.dy)*180/Math.PI;
+		boomerang.distance = Math.sqrt(boomerang.dx*boomerang.dx + boomerang.dy*boomerang.dy);
+		boomerang.speedX = boomerang.speed * (boomerang.dx / boomerang.distance);
+		boomerang.speedY = boomerang.speed * (boomerang.dy / boomerang.distance);
+		
+		//Debug Boomerang Movement
+		/*console.log("Attack");
+		console.log("dx: "+boomerang.dx);
+		console.log("dy: "+boomerang.dy);
+		console.log("Distance: "+boomerang.distance);
+		console.log("Angle: "+boomerang.angle);
+		console.log("x: "+mousePosition.x);
+		console.log("y: "+mousePosition.y);*/
+
+		boomerangTime = setInterval(boomerangTimer, 1000);
+	}
+}
+
+function objectMovement()
 {
 	enemy.dx = player.x - enemy.x;
 	enemy.dy = player.y - enemy.y;
 	enemy.distance = Math.sqrt(enemy.dx*enemy.dx + enemy.dy*enemy.dy);
 	enemy.angle = Math.atan2(enemy.dy, enemy.dx)* 180/Math.PI;
 	enemy.speedX = enemy.speed * (enemy.dx / enemy.distance);
-	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);
-	if (enemy.distance < 400)
+	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);	
+	if (enemy.distance < 500 && enemy.stun == false)
 	{
 		enemy.x += enemy.speedX;
 		enemy.y += enemy.speedY;
 	}
-	console.log("dx: "+enemy.dx);
+	// Debug Enemy AI
+	/*console.log("dx: "+enemy.dx);
 	console.log("dy: "+enemy.dy);
 	console.log("Distance: "+enemy.distance);
-	console.log("Angle: "+enemy.angle)
+	console.log("Angle: "+enemy.angle)*/
+	if (boomerang.timeThrown > .2)
+	{
+		boomerang.dx = player.x - boomerang.x;
+		boomerang.dy = player.y - boomerang.y;
+		boomerang.angle = Math.atan2(boomerang.dx,boomerang.dy)*180/Math.PI;
+		boomerang.distance = Math.sqrt(boomerang.dx*boomerang.dx + boomerang.dy*boomerang.dy);
+		boomerang.speedX = boomerang.speed * (boomerang.dx / boomerang.distance);
+		boomerang.speedY = boomerang.speed * (boomerang.dy / boomerang.distance);
+	}
+	if (boomerang.thrown == true)
+	{
+		boomerang.x += boomerang.speedX;
+		boomerang.y += boomerang.speedY;
+	}
 }
 
 function checkCollision()
@@ -210,6 +302,20 @@ function checkCollision()
 	}	
 	oldPosition.x = player.x;
 	oldPosition.y = player.y;
+	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
+	{
+		boomerang.thrown = false;
+		clearInterval(boomerangTime);
+		boomerang.timeThrown = 0;
+		console.log("Collide With Boomerang");
+	}
+	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
+	{
+		boomerang.timeThrown = 1;
+		enemy.stun = true;
+		timeStunned = setInterval(stunTimer, 1000);
+		console.log("Boomerang Hit Enemy");
+	}
 }
 
 function onKeyDown(event)
@@ -262,13 +368,24 @@ function animate()
 {
 	if (leftPressed || rightPressed || upPressed || downPressed)
 	{
-		currentFrame++;
-		if (currentFrame == maxFrames)
+		player.currentFrame++;
+		if (player.currentFrame == player.maxFrames)
 		{
 			player.frame++;
-			currentFrame = 0;
+			player.currentFrame = 0;
 			if (player.frame == 3)
 				player.frame = 1;
+		}
+	}
+	if (boomerang.thrown == true)
+	{
+		boomerang.currentFrame++;
+		if (boomerang.currentFrame == boomerang.maxFrames)
+		{
+			boomerang.frame++;
+			boomerang.currentFrame = 0;
+			if (boomerang.frame == 7)
+				boomerang.frame = 0;
 		}
 	}
 }
@@ -300,7 +417,7 @@ function gameOver()
 
 function render()
 {
-	surface.clearRect(0,0,mapSize,mapSize);
+	surface.clearRect(0,0,mapSizeX,mapSizeY);
 	surface.setTransform(1,0,0,1,0,0);
 	surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.height/2-24);
 
@@ -317,4 +434,6 @@ function render()
 
 	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
 	surface.drawImage(enemy.image, enemy.x, enemy.y);
+	if (boomerang.thrown == true)
+		surface.drawImage(boomerang.image, boomerang.frame*68, 0, 68, 68, boomerang.x, boomerang.y, boomerang.size, boomerang.size);
 }
