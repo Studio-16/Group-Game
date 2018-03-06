@@ -16,7 +16,7 @@ player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:1416, y:512, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0}
+var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 
@@ -242,14 +242,11 @@ function objectMovement()
 	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);	
 	if (enemy.distance < 500 && enemy.stun == false)
 	{
+		aud_Monster.play();
 		enemy.x += enemy.speedX;
 		enemy.y += enemy.speedY;
 	}
-	// Debug Enemy AI
-	/*console.log("dx: "+enemy.dx);
-	console.log("dy: "+enemy.dy);
-	console.log("Distance: "+enemy.distance);
-	console.log("Angle: "+enemy.angle)*/
+
 	if (boomerang.timeThrown > .2)
 	{
 		boomerang.dx = player.x - boomerang.x;
@@ -329,6 +326,7 @@ function gameOver()
 		document.getElementById("endGame").innerHTML = "You Got The Axe! You Win!";
 	}
 	else {
+		aud_Monster.pause();
 		aud_Lose.play();
 		document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
 	}

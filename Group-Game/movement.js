@@ -72,6 +72,7 @@ function checkCollision()
 	}
 	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
 	{
+		aud_Monster.pause();
 		boomerang.timeThrown = 1;
 		enemy.stun = true;
 		timeStunned = setInterval(stunTimer, 1000);
