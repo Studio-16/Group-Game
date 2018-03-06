@@ -24,6 +24,22 @@ var boomerang = {speed:1.5, x:0, y:0, dx:0, dy:0, angle:0, distance:0, xSpeed:0,
 boomerang.image = new Image();
 boomerang.image.src = "img/boomerangSheet.png"
 
+var foodPickup = {x:1920, y:1100, width: 64, height: 64, used: false}
+foodPickup.image = new Image();
+foodPickup.image.src = "img/carrot.png";
+
+var treePickup = {x: 1500, y: 1000, width: 64, height: 64, used: false}
+treePickup.image = new Image();
+treePickup.image.src = "img/treeSingle.png";
+
+var stickPickup = {x:0, y: 0, width: 64, height: 64, used: false}
+stickPickup.image = new Image();
+stickPickup.image.src = "img/stick.png";
+
+var axePickup = {x:0, y:0, width: 64, height: 64, used: false}
+axePickup.image = new Image();
+axePickup.image.src = "img/axe.png";
+
 var crftPlus = {}
 crftPlus.image = new Image();
 crftPlus.image.src = "img/craftingPlus.png";
@@ -49,6 +65,23 @@ var craftInv = [];
 
 var mapFarm = [];
 var mapCollidable = [];
+
+var aud_Music = new Audio ("audio/mus_Main.mp3");
+aud_Music.loop = true;
+aud_Music.volume = 0.25;
+	
+var aud_Death = new Audio ("audio/snd_Death.wav");
+aud_Death.volume = 0.5;
+
+var aud_Monster = new Audio("audio/snd_Monster.wav");
+aud_Monster.loop = true;
+aud_Monster.volume = 0.5;
+
+var aud_Win = new Audio ("audio/mus_Win.wav");
+aud_Win.volume = 0.5;
+
+var aud_Lose = new Audio("audio/mus_Lose.wav");
+aud_Lose.volume = 0.5;
 	
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
@@ -380,5 +413,199 @@ function render()
 
 	if (boomerang.thrown == true)
 		surface.drawImage(boomerang.image, boomerang.frame*68, 0, 68, 68, boomerang.x, boomerang.y, boomerang.size, boomerang.size);
+}
 
+function onKeyDown(event)
+{
+	switch (event.keyCode)
+	{
+	    case 65: // A
+	    	leftPressed = true;
+	    	player.idle = false;
+	    	break;
+	    case 68: // D
+	    	rightPressed = true;
+	    	player.idle = false;
+	    	break;
+	    case 87: // W
+	    	upPressed = true;
+	    	player.idle = false;
+	    	break;
+	    case 83: // S
+	    	downPressed = true;
+	    	player.idle = false;
+	    	break;
+			
+		case 69: // E
+			openCraftMenu();
+			break;
+	}
+}
+
+function onKeyUp(event)
+{
+	switch (event.keyCode)
+	{
+	    case 65: // A
+	    	leftPressed = false;
+	    	player.idle = true; 
+	    	break;
+	    case 68: // D
+	    	rightPressed = false;
+	    	player.idle = true; 
+	    	break;
+	    case 87: // W
+	    	upPressed = false;
+	    	player.idle = true; 
+	    	break;
+	    case 83: // S
+	    	downPressed = false;
+	    	player.idle = true; 
+	    	break;
+	}
+}
+
+function clickItem(event) {
+	
+	var mousePos = { 
+		x: event.pageX,
+		y: event.pageY
+	}
+	
+	if (isIntersect(mousePos, elemInventory)) {
+		mousePos.x -= elemInventory.offsetLeft;
+		mousePos.y -= elemInventory.offsetTop;
+		if (craftInvOpen) {
+			for (var ctr = 0; ctr < inventory.length; ctr++) {
+				if (isIntersect(mousePos, {offsetLeft: inventory[ctr].x, offsetTop: inventory[ctr].y, width: inventory[ctr].width, height: inventory[ctr].height})) {
+					craftInv.push(inventory[ctr]);
+					inventory.splice(ctr,1);
+					if (craftInv.length >= 2)
+						craftItem(craftInv[0], craftInv[1]);
+					break;
+				}
+			}
+		}
+	}
+	else if (isIntersect(mousePos, elemCraft)) {
+		mousePos.x -= elemCraft.offsetLeft;
+		mousePos.y -= elemCraft.offsetTop;
+		
+		if (craftInvOpen) {
+			for (var ctr = 0; ctr < craftInv.length; ctr++) {
+				if (isIntersect(mousePos, {offsetLeft: craftInv[ctr].x, offsetTop: craftInv[ctr].y, width: craftInv[ctr].width, height: craftInv[ctr].height})) {
+					if (ctr <= 1) {
+						inventory.push(craftInv[ctr]);
+						craftInv.splice(ctr,1);
+						craftItem(null, null);
+					}
+					else if (ctr >= 2) {
+						inventory.push(craftInv[ctr]);
+						craftInv.splice(0, craftInv.length);
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+
+function isIntersect(point, elem) {
+	if (point.x > elem.offsetLeft && point.x < elem.offsetLeft + elem.width && point.y > elem.offsetTop && point.y < elem.offsetTop + elem.height) {
+		
+		return true;
+	}
+	else
+		return false;
+}
+
+function craftItem(item1, item2) {
+	if ((item1 == foodPickup && item2 == stickPickup) || (item1 == stickPickup && item2 == foodPickup)) {
+		craftInv.push(axePickup);
+	}
+	
+	else 
+		craftInv.pop();
+}
+
+function movePlayer()
+{	
+	if (leftPressed)
+	{
+	    player.x -= player.speed;
+	    player.dir = 3;
+	}
+	if (rightPressed)
+	{
+	    player.x += player.speed;
+	    player.dir = 1;
+	}
+	if (upPressed)
+	{
+		player.y -= player.speed;
+		player.dir = 0;
+	}
+	if (downPressed)
+	{
+   		player.y += player.speed;
+   		player.dir = 2;
+	}
+	if(player.idle == true)
+		player.frame = 0;
+}
+
+function checkCollision()
+{
+	if (player.x + player.xSize > foodPickup.x && player.x < foodPickup.x + 64 && player.y + player.ySize > foodPickup.y && player.y < foodPickup.y + 64)
+	{
+		if (!inventory.includes(foodPickup)) 
+			if (!craftInv.includes(stickPickup))
+				inventory.push(foodPickup);
+	}
+
+	if (player.x + player.xSize > treePickup.x && player.x < treePickup.x + 64 && player.y + player.ySize > treePickup.y && player.y < treePickup.y + 64)
+	{
+		if (!treePickup.used) {
+				inventory.push(stickPickup);
+				treePickup.used = true;
+			}
+	}		
+	
+	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
+	{
+		aud_Monster.pause();
+		aud_Death.play();
+		aud_Monster.loop = false;
+		aud_Music.pause();
+		clearInterval(updateInterval);
+		clearInterval(endTimer);
+		document.getElementById("endGame").style.color = "red";
+		document.getElementById("endGame").innerHTML = "You Died...";
+	}
+	for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
+	{
+		if (player.x + player.xSize > mapCollidable[ctr].x && player.x < mapCollidable[ctr].x + 64 && player.y + player.ySize > mapCollidable[ctr].y && player.y < mapCollidable[ctr].y + 64) 
+		{
+			player.x = oldPosition.x;
+			player.y = oldPosition.y;
+		}
+	}	
+	oldPosition.x = player.x;
+	oldPosition.y = player.y;
+	
+	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
+	{
+		boomerang.thrown = false;
+		clearInterval(boomerangTime);
+		boomerang.timeThrown = 0;
+		console.log("Collide With Boomerang");
+	}
+	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
+	{
+		aud_Monster.pause();
+		boomerang.timeThrown = 1;
+		enemy.stun = true;
+		timeStunned = setInterval(stunTimer, 1000);
+		console.log("Boomerang Hit Enemy");
+	}
 }
