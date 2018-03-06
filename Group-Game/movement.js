@@ -24,23 +24,6 @@ function movePlayer()
 		player.frame = 0;
 }
 
-function enemyMovement()
-{
-	enemy.dx = player.x - enemy.x;
-	enemy.dy = player.y - enemy.y;
-	enemy.distance = Math.sqrt(enemy.dx*enemy.dx + enemy.dy*enemy.dy);
-	enemy.angle = Math.atan2(enemy.dy, enemy.dx)* 180/Math.PI;
-	enemy.speedX = enemy.speed * (enemy.dx / enemy.distance);
-	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);
-	if (enemy.distance < 400) {
-		aud_Monster.play();
-		enemy.x += enemy.speedX;
-		enemy.y += enemy.speedY;
-	}
-	else 
-		aud_Monster.pause();
-}
-
 function checkCollision()
 {
 	if (player.x + player.xSize > foodPickup.x && player.x < foodPickup.x + 64 && player.y + player.ySize > foodPickup.y && player.y < foodPickup.y + 64)
@@ -79,4 +62,19 @@ function checkCollision()
 	}	
 	oldPosition.x = player.x;
 	oldPosition.y = player.y;
+	
+	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
+	{
+		boomerang.thrown = false;
+		clearInterval(boomerangTime);
+		boomerang.timeThrown = 0;
+		console.log("Collide With Boomerang");
+	}
+	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
+	{
+		boomerang.timeThrown = 1;
+		enemy.stun = true;
+		timeStunned = setInterval(stunTimer, 1000);
+		console.log("Boomerang Hit Enemy");
+	}
 }
