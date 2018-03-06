@@ -6,7 +6,7 @@ var canvasInventory = elemInventory.getContext('2d');
 
 var elemCraft= document.getElementById("craft");
 var canvasCraft = elemCraft.getContext('2d');
-var craftingOpen = false;
+var craftInvOpen = false;
 
 var mapSize = 1600;
 
@@ -19,23 +19,13 @@ var enemy = {speed:.5, x:1416, y:512, dx:0, dy:0, angle:0, distance:0, xSpeed:0,
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 
-var deathSound = new Audio ("audio/death-scream.wav");
+var crftPlus = {}
+crftPlus.image = new Image();
+crftPlus.image.src = "img/craftingPlus.png";
 
-var foodPickup = {x:1152, y:512}
-foodPickup.image = new Image();
-foodPickup.image.src = "img/carrot.png";
-
-var treePickup = {x: 1000, y: 1000}
-treePickup.image = new Image();
-treePickup.image.src = "img/treeSingle.png";
-
-var stickPickup = {x:0, y: 0}
-stickPickup.image = new Image();
-stickPickup.image.src = "img/stick.png";
-
-var axePickup = {x:0, y:0}
-axePickup.image = new Image();
-axePickup.image.src = "img/axe.png";
+var crftEqual = {}
+crftEqual.image = new Image();
+crftEqual.image.src = "img/craftingEquals.png";
 
 var currentFrame = 0;
 var maxFrames = 60;
@@ -50,10 +40,11 @@ var currentTime = 0;
 var endTimer = setInterval(endGameTimer, 1000);
 
 var inventory = [];
-var crafting = [];
+var craftInv = [];
+
 var mapFarm = [];
 var mapCollidable = [];
-
+	
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
 /*Starts at 16*/ "wallX", "wallY", "cornerTopL", "cornerTopR", "cornerBotL", "cornerBotR",
@@ -100,11 +91,12 @@ var COLS = map[0].length;
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
 
-elemInventory.addEventListener("click", craftItem);
+window.addEventListener("click", clickItem);
 
 //window.addEventListener("playerAttack", mouseDown);
 
 createMap();
+aud_Music.play();
 
 var fps = 60;
 var updateInterval;
@@ -153,144 +145,16 @@ function createMap()
 	
 }
 
-function movePlayer()
-{	
-	if (leftPressed)
-	{
-	    player.x -= player.speed;
-	    player.dir = 3;
-	}
-	if (rightPressed)
-	{
-	    player.x += player.speed;
-	    player.dir = 1;
-	}
-	if (upPressed)
-	{
-		player.y -= player.speed;
-		player.dir = 0;
-	}
-	if (downPressed)
-	{
-   		player.y += player.speed;
-   		player.dir = 2;
-	}
-	if(player.idle == true)
-		player.frame = 0;
-}
-
 function playerAttack()
 {
 
 }
 
-function enemyMovement()
-{
-	enemy.dx = player.x - enemy.x;
-	enemy.dy = player.y - enemy.y;
-	enemy.distance = Math.sqrt(enemy.dx*enemy.dx + enemy.dy*enemy.dy);
-	enemy.angle = Math.atan2(enemy.dy, enemy.dx)* 180/Math.PI;
-	enemy.speedX = enemy.speed * (enemy.dx / enemy.distance);
-	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);
-	if (enemy.distance < 400)
-	{
-		enemy.x += enemy.speedX;
-		enemy.y += enemy.speedY;
-	}
-}
-
-function checkCollision()
-{
-	if (player.x + player.xSize > foodPickup.x && player.x < foodPickup.x + 64 && player.y + player.ySize > foodPickup.y && player.y < foodPickup.y + 64)
-	{
-		if (!inventory.includes(foodPickup)) 
-			{
-				inventory.push(foodPickup);
-			}
-	}
-
-	if (player.x + player.xSize > treePickup.x && player.x < treePickup.x + 64 && player.y + player.ySize > treePickup.y && player.y < treePickup.y + 64)
-	{
-		if (!inventory.includes(stickPickup)) 
-			{
-				inventory.push(stickPickup);
-			}
-	}		
-	
-	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
-	{
-		deathSound.play();
-		clearInterval(updateInterval);
-		clearInterval(endTimer);
-		document.getElementById("endGame").style.color = "red";
-		document.getElementById("endGame").innerHTML = "You Died...";
-	}
-	for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
-	{
-		if (player.x + player.xSize > mapCollidable[ctr].x && player.x < mapCollidable[ctr].x + 64 && player.y + player.ySize > mapCollidable[ctr].y && player.y < mapCollidable[ctr].y + 64) 
-		{
-			player.x = oldPosition.x;
-			player.y = oldPosition.y;
-		}
-	}	
-	oldPosition.x = player.x;
-	oldPosition.y = player.y;
-}
-
-function onKeyDown(event)
-{
-	switch (event.keyCode)
-	{
-	    case 65: // A
-	    	leftPressed = true;
-	    	player.idle = false;
-	    	break;
-	    case 68: // D
-	    	rightPressed = true;
-	    	player.idle = false;
-	    	break;
-	    case 87: // W
-	    	upPressed = true;
-	    	player.idle = false;
-	    	break;
-	    case 83: // S
-	    	downPressed = true;
-	    	player.idle = false;
-	    	break;
-			
-		case 69: // E
-			openCraftMenu();
-			break;
-	}
-}
-
-function onKeyUp(event)
-{
-	switch (event.keyCode)
-	{
-	    case 65: // A
-	    	leftPressed = false;
-	    	player.idle = true; 
-	    	break;
-	    case 68: // D
-	    	rightPressed = false;
-	    	player.idle = true; 
-	    	break;
-	    case 87: // W
-	    	upPressed = false;
-	    	player.idle = true; 
-	    	break;
-	    case 83: // S
-	    	downPressed = false;
-	    	player.idle = true; 
-	    	break;
-	}
-}
 
 function openCraftMenu() {
-	craftingOpen = !craftingOpen;
+	craftInvOpen = !craftInvOpen;
 	
-	if (craftingOpen) {
+	if (craftInvOpen) {
 		elemCraft.style.display = "block";
 	}
 	else {
@@ -298,29 +162,6 @@ function openCraftMenu() {
 	}
 }
 
-function craftItem(event) {
-	var mousePos = { 
-		x: event.pageX - elemInventory.offsetLeft,
-		y: event.pageY - elemInventory.offsetTop
-	}
-	
-	if (craftingOpen) {
-		for (var ctr = 0; ctr < inventory.length; ctr++) {
-			if (isIntersect(mousePos, inventory[ctr])) {
-				crafting.push(inventory[ctr]);
-				inventory.splice(ctr,1);
-			}
-		}
-	}
-}
-
-function isIntersect(point, elem) {
-	if (point.x > elem.x && point.x < elem.x + 64 && point.y > elem.y && point.y < elem.y + 64) {
-		return true;
-	}
-	else
-		return false;
-}
 function animate()
 {
 	if (leftPressed || rightPressed || upPressed || downPressed)
@@ -354,11 +195,16 @@ function gameOver()
 {
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
-
-	if (inventory.includes(foodPickup))
-		document.getElementById("endGame").innerHTML = "You Got The Food! You Win!";
-	else 
+	aud_Music.pause();	
+	
+	if (inventory.includes(axePickup)) {
+		aud_Win.play();
+		document.getElementById("endGame").innerHTML = "You Got The Axe! You Win!";
+	}
+	else {
+		aud_Lose.play();
 		document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
+	}
 }
 
 function render()
@@ -381,19 +227,25 @@ function render()
 		canvasInventory.drawImage(inventory[ctr].image, inventory[ctr].x, inventory[ctr].y, 64, 64);
 	}
 	
-	for (var ctr = 0; ctr < crafting.length; ctr++) {
-		crafting[ctr].x = ctr * 64;
-		crafting[ctr].y = 0;
-		canvasCraft.drawImage(crafting[ctr].image, crafting[ctr].x, crafting[ctr].y, 64, 64);
+	if (craftInvOpen) {
+		canvasCraft.drawImage(crftPlus.image, 64, 0, 64, 64);
+		canvasCraft.drawImage(crftEqual.image, 192, 0, 64, 64);
 	}
 	
-	if (!inventory.includes(foodPickup) || !crafting.includes(foodPickup))
+	for (var ctr = 0; ctr < craftInv.length; ctr++) {
+		craftInv[ctr].x = ctr * 128;
+		craftInv[ctr].y = 0;
+		canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
+	}
+	
+	
+	if (!inventory.includes(foodPickup) || !craftInv.includes(foodPickup))
 		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
 	
-	if (!inventory.includes(stickPickup) || !crafting.includes(stickPickup))
+	if (!treePickup.used)
 		surface.drawImage(treePickup.image, treePickup.x, treePickup.y);
 	
-
+	
 	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
 	surface.drawImage(enemy.image, enemy.x, enemy.y);
 }
