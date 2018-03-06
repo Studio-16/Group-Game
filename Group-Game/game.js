@@ -246,6 +246,9 @@ function objectMovement()
 		enemy.x += enemy.speedX;
 		enemy.y += enemy.speedY;
 	}
+	else {
+		aud_Monster.pause();
+	}
 
 	if (boomerang.timeThrown > .2)
 	{
