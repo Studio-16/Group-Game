@@ -1,43 +1,97 @@
 var canvas = document.querySelector("canvas");
 var surface = canvas.getContext("2d");
-var canvasInventory = document.getElementById("inventory").getContext('2d');
+
+var elemInventory = document.getElementById("inventory");
+var canvasInventory = elemInventory.getContext('2d');
+
+var elemCraft= document.getElementById("craft");
+var canvasCraft = elemCraft.getContext('2d');
+var craftInvOpen = false;
+
+var elemHealth = document.getElementById("health");
+var canvasHealth = elemHealth.getContext('2d');
 
 var mapSizeX = 3200;
 var mapSizeY = 2944;
 
-
-var player = {x:mapSizeX/2-24, y:mapSizeY/2-24, idle:true, frame:0, currentFrame:0, dir:2, speed:1, xSize:36, ySize:48, maxFrames:60}
+var player = {x:mapSizeX/2-24, y:mapSizeY/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
 player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0, size:16}
+var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
-var enemyOldPosition = {x:enemy.x, y:enemy.y};
-var deathSound = new Audio ("audio/death-scream.wav");
 
 var boomerang = {speed:1.5, x:0, y:0, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, thrown:false, timeThrown:0, frame:0, currentFrame:0, maxFrames:15, size:32}
 boomerang.image = new Image();
-boomerang.image.src = "img/boomerangSheet.png";
+boomerang.image.src = "img/boomerangSheet.png"
 
-var foodPickup = {x:1920, y:1152}
+var foodPickup = {x:1920, y:1100, width: 64, height: 64, used: false}
 foodPickup.image = new Image();
 foodPickup.image.src = "img/carrot.png";
+
+var treePickup = {x: 1500, y: 1000, width: 64, height: 64, used: false}
+treePickup.image = new Image();
+treePickup.image.src = "img/treeSingle.png";
+
+var stickPickup = {x:0, y: 0, width: 64, height: 64, used: false}
+stickPickup.image = new Image();
+stickPickup.image.src = "img/stick.png";
+
+var axePickup = {x:0, y:0, width: 64, height: 64, used: false}
+axePickup.image = new Image();
+axePickup.image.src = "img/axe.png";
+
+var crftPlus = {}
+crftPlus.image = new Image();
+crftPlus.image.src = "img/craftingPlus.png";
+
+var crftEqual = {}
+crftEqual.image = new Image();
+crftEqual.image.src = "img/craftingEquals.png";
+
+var playerHealth = 3;
+
+var heart = {}
+heart.image = new Image();
+heart.image.src = "img/heart.png";
+
+var currentFrame = 0;
+var maxFrames = 60;
 
 var leftPressed = false;
 var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var endTime = 59;
+var endTime = 190;
 var currentTime = 0;
-var endTimer = setInterval(endGameTimer, 1000);
+var endTimer;
 
 var inventory = [];
+var craftInv = [];
+
 var mapFarm = [];
 var mapCollidable = [];
 
+var aud_Music = new Audio ("audio/mus_Main.mp3");
+aud_Music.loop = true;
+aud_Music.volume = 0.25;
+	
+var aud_Death = new Audio ("audio/snd_Death.wav");
+aud_Death.volume = 0.5;
+
+var aud_Monster = new Audio("audio/snd_Monster.wav");
+aud_Monster.loop = true;
+aud_Monster.volume = 0.5;
+
+var aud_Win = new Audio ("audio/mus_Win.wav");
+aud_Win.volume = 0.5;
+
+var aud_Lose = new Audio("audio/mus_Lose.wav");
+aud_Lose.volume = 0.5;
+	
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
 /*Starts at 16*/ "wallX", "wallY", "cornerTopL", "cornerTopR", "cornerBotL", "cornerBotR",
@@ -101,14 +155,20 @@ var map =
 	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],	
 ];
 
+
 var ROWS = map.length;
 var COLS = map[0].length;
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
+
+window.addEventListener("click", clickItem);
+
 canvas.addEventListener("mousedown", playerAttack);
 
 createMap();
+
+aud_Music.play();
 
 var fps = 60;
 var updateInterval;
@@ -116,10 +176,13 @@ var updateInterval;
 function update()
 {
 	render();
-	movePlayer();
-	animate();
-	checkCollision();
-	objectMovement();
+	
+	if (!mainMenuOpen) {
+		movePlayer();
+		animate();
+		checkCollision();
+		objectMovement();
+	}
 }
 
 function createMap()
@@ -157,33 +220,7 @@ function createMap()
 	updateInterval = setInterval(update, 1000/fps);
 }
 
-function movePlayer()
-{	
-	if (leftPressed)
-	{
-	    player.x -= player.speed;
-	    player.dir = 3;
-	}
-	if (rightPressed)
-	{
-	    player.x += player.speed;
-	    player.dir = 1;
-	}
-	if (upPressed)
-	{
-		player.y -= player.speed;
-		player.dir = 0;
-	}
-	if (downPressed)
-	{
-   		player.y += player.speed;
-   		player.dir = 2;
-	}
-	if(player.idle == true)
-		player.frame = 0;
-}
-
-function  getMousePos(canvas, event) 
+function getMousePos(canvas, event) 
 {
 	var rect = canvas.getBoundingClientRect(),
     scaleX = canvas.width / rect.width,
@@ -212,29 +249,21 @@ function stunTimer()
 
 function playerAttack(e)
 {
-	if (boomerang.thrown == false)
-	{
-		var mousePosition = getMousePos(canvas, e);
-		boomerang.x = player.x;
-		boomerang.y = player.y;	
-		boomerang.thrown = true;
-		boomerang.dx = mousePosition.x - canvas.width/2;
-		boomerang.dy = mousePosition.y - canvas.height/2;
-		boomerang.angle = Math.atan2(boomerang.dx,boomerang.dy)*180/Math.PI;
-		boomerang.distance = Math.sqrt(boomerang.dx*boomerang.dx + boomerang.dy*boomerang.dy);
-		boomerang.speedX = boomerang.speed * (boomerang.dx / boomerang.distance);
-		boomerang.speedY = boomerang.speed * (boomerang.dy / boomerang.distance);
-		
-		//Debug Boomerang Movement
-		/*console.log("Attack");
-		console.log("dx: "+boomerang.dx);
-		console.log("dy: "+boomerang.dy);
-		console.log("Distance: "+boomerang.distance);
-		console.log("Angle: "+boomerang.angle);
-		console.log("x: "+mousePosition.x);
-		console.log("y: "+mousePosition.y);*/
-
-		boomerangTime = setInterval(boomerangTimer, 1000);
+	if (!mainMenuOpen) {
+		if (boomerang.thrown == false)
+		{
+			var mousePosition = getMousePos(canvas, e);
+			boomerang.x = player.x;
+			boomerang.y = player.y;	
+			boomerang.thrown = true;
+			boomerang.dx = mousePosition.x - canvas.width/2;
+			boomerang.dy = mousePosition.y - canvas.height/2;
+			boomerang.angle = Math.atan2(boomerang.dx,boomerang.dy)*180/Math.PI;
+			boomerang.distance = Math.sqrt(boomerang.dx*boomerang.dx + boomerang.dy*boomerang.dy);
+			boomerang.speedX = boomerang.speed * (boomerang.dx / boomerang.distance);
+			boomerang.speedY = boomerang.speed * (boomerang.dy / boomerang.distance);
+			boomerangTime = setInterval(boomerangTimer, 1000);
+		}
 	}
 }
 
@@ -248,14 +277,14 @@ function objectMovement()
 	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);	
 	if (enemy.distance < 500 && enemy.stun == false)
 	{
+		aud_Monster.play();
 		enemy.x += enemy.speedX;
 		enemy.y += enemy.speedY;
 	}
-	// Debug Enemy AI
-	/*console.log("dx: "+enemy.dx);
-	console.log("dy: "+enemy.dy);
-	console.log("Distance: "+enemy.distance);
-	console.log("Angle: "+enemy.angle)*/
+	else {
+		aud_Monster.pause();
+	}
+
 	if (boomerang.timeThrown > .2)
 	{
 		boomerang.dx = player.x - boomerang.x;
@@ -277,20 +306,28 @@ function checkCollision()
 	if (player.x + player.xSize > foodPickup.x && player.x < foodPickup.x + 64 && player.y + player.ySize > foodPickup.y && player.y < foodPickup.y + 64)
 	{
 		if (!inventory.includes(foodPickup)) 
-			{
+			if (!craftInv.includes(stickPickup))
 				inventory.push(foodPickup);
-				console.log("Food Collected");
-			}
-			console.log("Collide With Food");
 	}
-	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
+
+	if (player.x + player.xSize > treePickup.x && player.x < treePickup.x + 64 && player.y + player.ySize > treePickup.y && player.y < treePickup.y + 64)
 	{
-		deathSound.play();
-		clearInterval(updateInterval);
-		clearInterval(endTimer);
-		document.getElementById("endGame").style.color = "red";
-		document.getElementById("endGame").innerHTML = "You Died...";
-		console.log("Collide With Enemy");
+		if (!treePickup.used) {
+				inventory.push(stickPickup);
+				treePickup.used = true;
+			}
+	}		
+	
+	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
+	{	
+		playerHealth--;
+		enemy.x += 50;
+		enemy.y += 50;
+		if (playerHealth <= 0) {
+			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+			playerDead();
+		}
+		
 	}
 	for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
 	{
@@ -298,22 +335,11 @@ function checkCollision()
 		{
 			player.x = oldPosition.x;
 			player.y = oldPosition.y;
-			console.log("Collide With Tile");
 		}
 	}	
 	oldPosition.x = player.x;
 	oldPosition.y = player.y;
-	for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
-	{
-		if (enemy.x + enemy.size > mapCollidable[ctr].x && enemy.x < mapCollidable[ctr].x + 64 && enemy.y + enemy.size > mapCollidable[ctr].y && enemy.y < mapCollidable[ctr].y + 64) 
-		{
-			enemy.x = enemyOldPosition.x;
-			enemy.y = enemyOldPosition.y;
-			console.log("Collide With Tile");
-		}
-	}	
-	enemyOldPosition.x = enemy.x;
-	enemyOldPosition.y = enemy.y;
+	
 	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
 	{
 		boomerang.thrown = false;
@@ -323,11 +349,130 @@ function checkCollision()
 	}
 	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
 	{
+		aud_Monster.pause();
 		boomerang.timeThrown = 1;
 		enemy.stun = true;
 		timeStunned = setInterval(stunTimer, 1000);
 		console.log("Boomerang Hit Enemy");
 	}
+}
+
+function animate()
+{
+	if (leftPressed || rightPressed || upPressed || downPressed)
+	{
+		currentFrame++;
+		if (currentFrame == maxFrames)
+		{
+			player.frame++;
+			currentFrame = 0;
+			if (player.frame == 3)
+				player.frame = 1;
+		}
+	}
+
+	if (boomerang.thrown == true)
+	{
+		boomerang.currentFrame++;
+		if (boomerang.currentFrame == boomerang.maxFrames)
+		{
+			boomerang.frame++;
+			boomerang.currentFrame = 0;
+			if (boomerang.frame == 7)
+				boomerang.frame = 0;
+		}
+	}
+}
+
+function openCraftMenu() {
+	if (!mainMenuOpen) {
+		craftInvOpen = !craftInvOpen;
+
+		if (craftInvOpen) {
+			elemCraft.style.visibility = "visible";
+		}
+		else {
+		elemCraft.style.visibility = "hidden";
+		}
+	}
+}
+
+function clickItem(event) {
+	
+	var mousePos = { 
+		x: event.pageX,
+		y: event.pageY
+	}
+	
+	if (isIntersect(mousePos, elemInventory)) {
+		mousePos.x -= elemInventory.offsetLeft;
+		mousePos.y -= elemInventory.offsetTop;
+		
+		if (craftInvOpen) {
+			for (var ctr = 0; ctr < inventory.length; ctr++) {
+				if (isIntersect(mousePos, {offsetLeft: inventory[ctr].x, offsetTop: inventory[ctr].y, width: inventory[ctr].width, height: inventory[ctr].height})) {
+					craftInv.push(inventory[ctr]);
+					inventory.splice(ctr,1);
+					
+					if (craftInv.length >= 2)
+						craftItem(craftInv[0], craftInv[1]);
+					
+					break;
+				}
+			}
+		}
+		
+		else {
+			if (inventory.length >= 1) {
+				if (isIntersect(mousePos, {offsetLeft: inventory[inventory.indexOf(foodPickup)].x, offsetTop: inventory[inventory.indexOf(foodPickup)].y, width: inventory[inventory.indexOf(foodPickup)].width, height: inventory[inventory.indexOf(foodPickup)].height})) {
+					if (playerHealth < 3) {
+						playerHealth++;
+						inventory.splice(inventory.indexOf(foodPickup), 1);
+					}
+				}
+			}
+		}
+	}
+	
+	else if (isIntersect(mousePos, elemCraft)) {
+		mousePos.x -= elemCraft.offsetLeft;
+		mousePos.y -= elemCraft.offsetTop;
+		
+		if (craftInvOpen) {
+			for (var ctr = 0; ctr < craftInv.length; ctr++) {
+				if (isIntersect(mousePos, {offsetLeft: craftInv[ctr].x, offsetTop: craftInv[ctr].y, width: craftInv[ctr].width, height: craftInv[ctr].height})) {
+					if (ctr <= 1) {
+						inventory.push(craftInv[ctr]);
+						craftInv.splice(ctr,1);
+						craftItem(null, null);
+					}
+					else if (ctr >= 2) {
+						inventory.push(craftInv[ctr]);
+						craftInv.splice(0, craftInv.length);
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+
+function isIntersect(point, elem) {
+	if (point.x > elem.offsetLeft && point.x < elem.offsetLeft + elem.width && point.y > elem.offsetTop && point.y < elem.offsetTop + elem.height) {
+		
+		return true;
+	}
+	else
+		return false;
+}
+
+function craftItem(item1, item2) {
+	if ((item1 == foodPickup && item2 == stickPickup) || (item1 == stickPickup && item2 == foodPickup)) {
+		craftInv.push(axePickup);
+	}
+	
+	else 
+		craftInv.pop();
 }
 
 function onKeyDown(event)
@@ -350,6 +495,10 @@ function onKeyDown(event)
 	    	downPressed = true;
 	    	player.idle = false;
 	    	break;
+			
+		case 69: // E
+			openCraftMenu();
+			break;
 	}
 }
 
@@ -376,30 +525,42 @@ function onKeyUp(event)
 	}
 }
 
-function animate()
-{
-	if (leftPressed || rightPressed || upPressed || downPressed)
+function movePlayer()
+{	
+	if (leftPressed)
 	{
-		player.currentFrame++;
-		if (player.currentFrame == player.maxFrames)
-		{
-			player.frame++;
-			player.currentFrame = 0;
-			if (player.frame == 3)
-				player.frame = 1;
-		}
+	    player.x -= player.speed;
+	    player.dir = 3;
 	}
-	if (boomerang.thrown == true)
+	if (rightPressed)
 	{
-		boomerang.currentFrame++;
-		if (boomerang.currentFrame == boomerang.maxFrames)
-		{
-			boomerang.frame++;
-			boomerang.currentFrame = 0;
-			if (boomerang.frame == 7)
-				boomerang.frame = 0;
-		}
+	    player.x += player.speed;
+	    player.dir = 1;
 	}
+	if (upPressed)
+	{
+		player.y -= player.speed;
+		player.dir = 0;
+	}
+	if (downPressed)
+	{
+   		player.y += player.speed;
+   		player.dir = 2;
+	}
+	if(player.idle == true)
+		player.frame = 0;
+}
+
+function playerDead() {
+	aud_Monster.pause();
+	aud_Death.play();
+	aud_Monster.loop = false;
+	aud_Music.pause();
+	clearInterval(updateInterval);
+	clearInterval(endTimer);
+	document.getElementById("endGame").style.color = "red";
+	document.getElementById("endGame").innerHTML = "You Died...";
+	document.getElementById("endGame").style.visibility = "visible";
 }
 
 function endGameTimer() 
@@ -420,32 +581,79 @@ function gameOver()
 {
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
-
-	if (inventory.includes(foodPickup))
-		document.getElementById("endGame").innerHTML = "You Got The Food! You Win!";
-	else 
+	aud_Music.pause();	
+	
+	if (inventory.includes(axePickup)) {
+		aud_Win.play();
+		document.getElementById("endGame").innerHTML = "You Got The Axe! You Win!";
+		document.getElementById("endGame").style.visibility = "visible";
+	}
+	else {
+		aud_Monster.pause();
+		aud_Lose.play();
 		document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
+		document.getElementById("endGame").style.visibility = "visible";
+	}
 }
 
-function render()
-{
-	surface.clearRect(0,0,mapSizeX,mapSizeY);
-	surface.setTransform(1,0,0,1,0,0);
-	surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.height/2-24);
-
-	for (var row = 0; row < ROWS; row++)
-	{
-		for ( var col = 0; col < COLS; col++)
-			surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
+function render() {
+	if (mainMenuOpen) {
+		surface.clearRect(0,0,canvas.width,canvas.height);
+		surface.setTransform(1,0,0,1,0,0);
+		
+		surface.drawImage(imgBackground.image, 0, 0, 800, 600);
+		surface.drawImage(btnPlay.image, btnPlay.x, btnPlay.y, 192, 64);
+		surface.drawImage(btnLoad.image, btnLoad.x, btnLoad.y, 192, 64);
+		surface.drawImage(btnOptions.image, btnOptions.x, btnOptions.y, 192, 64);
+		surface.drawImage(btnExit.image, btnExit.x, btnExit.y, 192, 64)
 	}
-	for (var ctr = 0; ctr < inventory.length; ctr++) 
-		canvasInventory.drawImage(inventory[ctr].image, (ctr * 64), (ctr * 64), 64, 64);
+	
+	else {
+		
+		surface.clearRect(0,0,mapSizeX,mapSizeY);
+		canvasCraft.clearRect(0,0, elemCraft.width, elemCraft.height);
+		canvasInventory.clearRect(0,0, elemInventory.width, elemInventory.height);
+		canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+		
+		surface.setTransform(1,0,0,1,0,0);
+		surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.height/2-24);
 
-	if (!inventory.includes(foodPickup))
-		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
+		for (var row = 0; row < ROWS; row++) {
+			for ( var col = 0; col < COLS; col++)
+				surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
+		}
 
-	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
-	surface.drawImage(enemy.image, enemy.x, enemy.y);
-	if (boomerang.thrown == true)
-		surface.drawImage(boomerang.image, boomerang.frame*68, 0, 68, 68, boomerang.x, boomerang.y, boomerang.size, boomerang.size);
+		for (var ctr = 0; ctr < inventory.length; ctr++) {
+			inventory[ctr].x = ctr * 64;
+			inventory[ctr].y = 0;
+			canvasInventory.drawImage(inventory[ctr].image, inventory[ctr].x, inventory[ctr].y, 64, 64);
+		}
+			
+		if (craftInvOpen) {
+			canvasCraft.drawImage(crftPlus.image, 64, 0, 64, 64);
+			canvasCraft.drawImage(crftEqual.image, 192, 0, 64, 64);
+		}
+			
+		for (var ctr = 0; ctr < craftInv.length; ctr++) {
+			craftInv[ctr].x = ctr * 128;
+			craftInv[ctr].y = 0;
+			canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
+		}
+			
+			
+		if (!inventory.includes(foodPickup) || !craftInv.includes(foodPickup))
+			surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
+			
+		if (!treePickup.used)
+			surface.drawImage(treePickup.image, treePickup.x, treePickup.y);
+			
+		surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
+		surface.drawImage(enemy.image, enemy.x, enemy.y);
+
+		if (boomerang.thrown == true)
+			surface.drawImage(boomerang.image, boomerang.frame*68, 0, 68, 68, boomerang.x, boomerang.y, boomerang.size, boomerang.size);
+
+		for (var ctr = 0; ctr < playerHealth; ctr++)
+			canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);
+	}
 }
