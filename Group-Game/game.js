@@ -11,8 +11,8 @@ var craftInvOpen = false;
 var elemHealth = document.getElementById("health");
 var canvasHealth = elemHealth.getContext('2d');
 
-var mapSizeX = 3200;
-var mapSizeY = 2944;
+var mapSizeX = 3136;
+var mapSizeY = 3008;
 var area = 0;
 
 var player = {x:mapSizeX/2-24, y:mapSizeY/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
@@ -29,19 +29,23 @@ var boomerang = {speed:1.5, x:0, y:0, dx:0, dy:0, angle:0, distance:0, xSpeed:0,
 boomerang.image = new Image();
 boomerang.image.src = "img/boomerangSheet.png"
 
-var foodPickup = {x:1920, y:1100, width: 64, height: 64, used: false}
+var foodPickup = {x:1920, y:1100, width:64, height:64, used:false}
 foodPickup.image = new Image();
 foodPickup.image.src = "img/carrot.png";
 
-var treePickup = {x: 1500, y: 1000, width: 64, height: 64, used: false}
+var treePickup = {x: 1400, y:1400, width:64, height:64, used:false}
 treePickup.image = new Image();
 treePickup.image.src = "img/treeSingle.png";
 
-var stickPickup = {x:0, y: 0, width: 64, height: 64, used: false}
+var stickPickup = {x:456, y:128, width:64, height:64, used:false}
 stickPickup.image = new Image();
 stickPickup.image.src = "img/stick.png";
 
-var axePickup = {x:0, y:0, width: 64, height: 64, used: false}
+var rockPickup = {x:456, y:768, width:64, height:64, used:false}
+rockPickup.image = new Image();
+rockPickup.image.src = "img/rock.png";
+
+var axePickup = {x:0, y:0, width:64, height:64, used:false}
 axePickup.image = new Image();
 axePickup.image.src = "img/axe.png";
 
@@ -70,6 +74,7 @@ var downPressed = false;
 var endTime = 180;
 var currentTime = 0;
 var endTimer;
+var restartTime = 6;
 
 var inventory = [];
 var craftInv = [];
@@ -77,7 +82,10 @@ var craftInv = [];
 var mapFarm = [];
 var mapCollidable = [];
 var mapCollidableArea1 = [];
-var warpZone = [];
+var mapCollidableArea2 = [];
+var warpZone0 = [];
+var warpZone1 = [];
+var warpZone2 = [];
 
 var aud_Music = new Audio ("audio/mus_Main.mp3");
 aud_Music.loop = true;
@@ -105,7 +113,7 @@ var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "f
 /*Starts at 41*/ "mFloorM", "mFloorU", "mFloorD", "mFloorL", "mFloorR", "mFloorTopL", "mFloorTopR", "mFloorBotL", "mFloorBotR",
 /*Starts at 50*/ "mFloorHorL", "mFloorHorM", "mFloorHorR", "mFloorVertU", "mFloorVertM", "mFloorVertD", "mFloorDot",
 /*Starts at 57*/ "tWallM", "tWallU", "tWallD", "tWallL", "tWallR", "wall",
-/*Starts at 63*/ "doorU", "doorD", "doorL", "doorR", "warpArea1"];
+/*Starts at 63*/ "doorU", "doorD", "doorL", "doorR", "warpArea1", "warpArea2"];
 var images = [];
 
 var map =
@@ -121,7 +129,7 @@ var map =
 	[17,53,62,62,62,54,62,62,62,54,62,54,62,44,51,51,43,43,41,51,41,41,42,41,41,41,41,42,51,42,42,42,51,42,41,52,62,44,45,62,46,45,62,46,47,62,44,45,17],
 	[17,48,51,47,62,48,54,54,42,49,62,54,62,56,62,62,62,62,56,62,48,43,43,43,43,43,43,49,62,48,43,49,62,48,49,62,62,48,49,62,48,43,51,41,43,47,62,56,17],
 	[17,62,62,54,62,62,62,62,54,62,62,54,18,16,16,16,16,16,16,16,16,16,16,16,63,16,16,16,16,16,16,16,16,16,16,16,19,62,62,62,62,62,62,56,62,48,49,62,17],
-	[17,47,62,44,51,51,42,51,45,62,46,45,18,5,1,1,11,27,23,23,23,28,5,1,1,1,1,1,1,1,10,1,10,1,10,6,17,46,47,62,53,62,62,62,62,62,62,62,17],
+	[17,47,62,44,51,51,42,51,45,62,46,45,17,5,1,1,11,27,23,23,23,28,5,1,1,1,1,1,1,1,10,1,10,1,10,6,17,46,47,62,53,62,62,62,62,62,62,62,17],
 	[17,54,62,54,62,62,54,62,54,62,44,45,17,3,0,4,27,22,22,22,22,30,3,0,0,0,0,0,0,4,38,13,38,13,38,13,17,44,45,62,48,47,62,53,62,46,42,52,17],
 	[17,54,62,48,47,62,54,62,54,62,44,45,17,3,0,4,25,22,22,22,26,5,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,44,45,62,62,54,62,44,42,43,45,62,17],
 	[17,54,62,62,54,62,56,62,54,62,48,45,17,3,0,8,25,22,22,22,26,3,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,48,45,62,46,49,62,44,45,62,44,47,17],
@@ -156,7 +164,7 @@ var map =
 	[17,54,62,62,50,49,62,48,47,62,48,41,42,42,42,42,42,42,47,62,62,48,51,51,51,51,49,62,62,62,50,51,42,43,49,62,48,45,62,48,52,62,54,62,54,62,62,54,17],
 	[17,44,47,62,62,62,62,62,54,62,62,48,43,43,43,43,43,43,41,47,62,62,62,62,62,62,62,62,53,62,62,62,54,62,62,62,62,54,62,62,62,62,54,62,44,47,62,54,17],
 	[17,48,43,51,51,51,51,51,43,52,62,62,62,62,62,62,62,62,48,43,51,51,51,51,51,51,51,51,43,51,51,51,43,51,51,52,62,48,51,51,51,51,49,62,44,45,62,54,17],
-	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],	
+	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,68,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],	
 ];
 
 var mapArea1 =
@@ -171,23 +179,48 @@ var mapArea1 =
 	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
 	[102, 108, 112, 112, 112, 112, 112, 112, 113, 103],
 	[117, 104, 104, 104, 104, 104, 104, 104, 104, 118],*/
-	[18,16,16,16,16,16,16,16,16,16,19],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[17,0,0,0,0,0,0,0,0,0,17],
-	[20,16,16,16,16,67,16,16,16,16,21],
+	[18,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[20,16,16,16,16,16,16,68,16,16,16,16,16,16,21],
+];
+
+var mapArea2 =
+[
+	[18,16,16,16,16,16,16,67,16,16,16,16,16,16,19],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
+	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,21],
 ];
 
 var ROWS = map.length;
 var COLS = map[0].length;
 var ROWSAREA1 = mapArea1.length;
 var COLSAREA1 = mapArea1[0].length;
+var ROWSAREA2 = mapArea2.length;
+var COLSAREA2 = mapArea2[0].length;
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
@@ -242,7 +275,11 @@ function createMap()
 			}
 			if (map[row][col] == 67)
 			{
-				warpZone.push(tile);
+				warpZone1.push(tile);
+			}
+			if (map[row][col] == 68)
+			{
+				warpZone2.push(tile);
 			}
 			if (map[row][col] == 38 || map[row][col] == 39 || map[row][col] == 40) 
 			{
@@ -270,11 +307,37 @@ function createMap()
 			{
 				mapCollidableArea1.push(tile);
 			}
-			if (mapArea1[row][col] == 67)
+			if (mapArea1[row][col] == 68)
 			{
-				warpZone.push(tile);
+				warpZone0.push(tile);
 			}
 			mapArea1[row][col] = tile;		
+		}
+	}
+
+	for (var row = 0; row < ROWSAREA2; row++)
+	{	
+		for (var col = 0; col < COLSAREA2; col++)
+		{
+			var tile = {};
+			tile.x = 64*col;
+			tile.y = 64*row;
+			tile.img = images[mapArea2[row][col]];
+			if (mapArea2[row][col] == 16 || mapArea2[row][col] == 17 || mapArea2[row][col] == 18 || mapArea2[row][col] == 19 ||
+				mapArea2[row][col] == 20 || mapArea2[row][col] == 21 || mapArea2[row][col] == 22 || mapArea2[row][col] == 23 || 
+				mapArea2[row][col] == 24 || mapArea2[row][col] == 25 || mapArea2[row][col] == 26 || mapArea2[row][col] == 27 ||
+				mapArea2[row][col] == 28 || mapArea2[row][col] == 29 || mapArea2[row][col] == 30 || mapArea2[row][col] == 31 || 
+				mapArea2[row][col] == 32 || mapArea2[row][col] == 33 || mapArea2[row][col] == 34 || mapArea2[row][col] == 35 ||
+				mapArea2[row][col] == 36 || mapArea2[row][col] == 37 || mapArea2[row][col] == 57 || mapArea2[row][col] == 58 ||
+				mapArea2[row][col] == 59 || mapArea2[row][col] == 60 || mapArea2[row][col] == 61 || mapArea2[row][col] == 62) 
+			{
+				mapCollidableArea2.push(tile);
+			}
+			if (mapArea2[row][col] == 67)
+			{
+				warpZone0.push(tile);
+			}
+			mapArea2[row][col] = tile;		
 		}
 	}
 
@@ -371,19 +434,33 @@ function checkCollision()
 				inventory.push(foodPickup);
 	}
 
-	if (player.x + player.xSize > treePickup.x && player.x < treePickup.x + 64 && player.y + player.ySize > treePickup.y && player.y < treePickup.y + 64)
+	if (player.x + player.xSize > stickPickup.x && player.x < stickPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < stickPickup.y + 64 && area == 1)
 	{
-		if (!treePickup.used) {
+		if (!stickPickup.used) {
 				inventory.push(stickPickup);
-				treePickup.used = true;
+				stickPickup.used = true;
 			}
-	}		
+	}	
+
+	if (player.x + player.xSize > rockPickup.x && player.x < rockPickup.x + 64 && player.y + player.ySize > rockPickup.y && player.y < rockPickup.y + 64 && area == 2)
+	{
+		if (!rockPickup.used) {
+				inventory.push(rockPickup);
+				rockPickup.used = true;
+			}
+	}
+
+	if (player.x + player.xSize - 8 > treePickup.x && player.x < treePickup.x + 56 && player.y + player.ySize > treePickup.y && player.y < treePickup.y + 32)
+	{
+		player.x = oldPosition.x;
+		player.y = oldPosition.y;
+	}	
 	
 	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
 	{	
 		playerHealth--;
-		enemy.x += 50;
-		enemy.y += 50;
+		player.x += enemy.speedX*200;
+		player.y += enemy.speedY*200;
 		if (playerHealth <= 0) {
 			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
 			playerDead();
@@ -394,7 +471,7 @@ function checkCollision()
 	{
 		for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
 		{
-			if (player.x + player.xSize > mapCollidable[ctr].x && player.x < mapCollidable[ctr].x + 64 && player.y + player.ySize > mapCollidable[ctr].y && player.y < mapCollidable[ctr].y + 64) 
+			if (player.x + player.xSize - 8 > mapCollidable[ctr].x && player.x < mapCollidable[ctr].x + 56 && player.y + player.ySize > mapCollidable[ctr].y && player.y < mapCollidable[ctr].y + 32) 
 			{
 				player.x = oldPosition.x;
 				player.y = oldPosition.y;
@@ -430,20 +507,66 @@ function checkCollision()
 		}
 	}
 
-	for (var ctr = 0; ctr < warpZone.length; ctr++) 
+	if (area == 2) 
 	{
-		if (player.x + player.xSize > warpZone[ctr].x && player.x < warpZone[ctr].x + 64 && player.y + player.ySize > warpZone[ctr].y && player.y < warpZone[ctr].y + 64) 
+		for (var ctr = 0; ctr < mapCollidableArea2.length; ctr++) 
+		{
+			if (player.x + player.xSize > mapCollidableArea2[ctr].x && player.x < mapCollidableArea2[ctr].x + 64 && player.y + player.ySize > mapCollidableArea2[ctr].y && player.y < mapCollidableArea2[ctr].y + 64) 
+			{
+				player.x = oldPosition.x;
+				player.y = oldPosition.y;
+			}
+		}
+		for (var ctr = 0; ctr < mapCollidableArea2.length; ctr++) 
+		{
+			if (enemy.x + enemy.size > mapCollidableArea2[ctr].x && enemy.x < mapCollidableArea2[ctr].x + 64 && enemy.y + enemy.size > mapCollidableArea2[ctr].y && enemy.y < mapCollidableArea2[ctr].y + 64) 
+			{
+				enemy.x = enemyOldPosition.x;
+				enemy.y = enemyOldPosition.y;
+			}
+		}
+	}
+
+	for (var ctr = 0; ctr < warpZone0.length; ctr++) 
+	{
+		if (player.x + player.xSize > warpZone0[ctr].x && player.x < warpZone0[ctr].x + 64 && player.y + player.ySize > warpZone0[ctr].y && player.y < warpZone0[ctr].y + 64) 
+		{
+			if (area == 1)
+			{
+				area = 0;
+				player.x = 1544;
+				player.y = 64;
+			}
+			if (area == 2)
+			{
+				area = 0;
+				player.x = 1544;
+				player.y = 2880;
+			}
+		}
+	}
+
+	for (var ctr = 0; ctr < warpZone1.length; ctr++) 
+	{
+		if (player.x + player.xSize > warpZone1[ctr].x && player.x < warpZone1[ctr].x + 64 && player.y + player.ySize > warpZone1[ctr].y && player.y < warpZone1[ctr].y + 64) 
 		{
 			if (area == 0)
 			{
 				area = 1;
-				player.x = 328;
-				player.y = 576;
+				player.x = 456;
+				player.y = 832;
 			}
-			else
+		}
+	}
+
+	for (var ctr = 0; ctr < warpZone2.length; ctr++) 
+	{
+		if (player.x + player.xSize > warpZone2[ctr].x && player.x < warpZone2[ctr].x + 64 && player.y + player.ySize > warpZone2[ctr].y && player.y < warpZone2[ctr].y + 64) 
+		{
+			if (area == 0)
 			{
-				area = 0;
-				player.x = 1544;
+				area = 2;
+				player.x = 456;
 				player.y = 64;
 			}
 		}
@@ -581,7 +704,7 @@ function isIntersect(point, elem) {
 }
 
 function craftItem(item1, item2) {
-	if ((item1 == foodPickup && item2 == stickPickup) || (item1 == stickPickup && item2 == foodPickup)) {
+	if ((item1 == foodPickup && item2 == stickPickup) || (item1 == stickPickup && item2 == rockPickup)) {
 		craftInv.push(axePickup);
 	}
 	
@@ -675,6 +798,15 @@ function playerDead() {
 	document.getElementById("endGame").style.color = "red";
 	document.getElementById("endGame").innerHTML = "You Died...";
 	document.getElementById("endGame").style.visibility = "visible";
+	setInterval(restartGameTimer,1000);
+}
+
+function restartGameTimer()
+{
+	restartTime--;
+	document.getElementById("endGame").innerHTML = "You Died... Restaring In " + restartTime;
+	if (restartTime <= 0)
+		location.reload();
 }
 
 function endGameTimer() 
@@ -745,6 +877,13 @@ function render() {
 			}
 		}
 
+		if (area == 2) {
+			for (var row = 0; row < ROWSAREA2; row++) {
+				for ( var col = 0; col < COLSAREA2; col++)
+					surface.drawImage(mapArea2[row][col].img,mapArea2[row][col].x,mapArea2[row][col].y, 64, 64);
+			}
+		}
+
 		for (var ctr = 0; ctr < inventory.length; ctr++) {
 			inventory[ctr].x = ctr * 64;
 			inventory[ctr].y = 0;
@@ -761,13 +900,18 @@ function render() {
 			craftInv[ctr].y = 0;
 			canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
 		}
-			
-			
-		if (!inventory.includes(foodPickup) || !craftInv.includes(foodPickup))
+					
+		if (!inventory.includes(foodPickup) || craftInv.includes(foodPickup))
 			surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
 			
 		if (!treePickup.used)
 			surface.drawImage(treePickup.image, treePickup.x, treePickup.y);
+
+		if (!stickPickup.used && area == 1)
+			surface.drawImage(stickPickup.image, stickPickup.x, stickPickup.y);
+
+		if (!rockPickup.used && area == 2)
+			surface.drawImage(rockPickup.image, rockPickup.x, rockPickup.y);
 			
 		surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
 		surface.drawImage(enemy.image, enemy.x, enemy.y);
