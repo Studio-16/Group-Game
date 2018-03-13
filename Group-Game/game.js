@@ -13,15 +13,17 @@ var canvasHealth = elemHealth.getContext('2d');
 
 var mapSizeX = 3200;
 var mapSizeY = 2944;
+var area = 0;
 
 var player = {x:mapSizeX/2-24, y:mapSizeY/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
 player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0}
+var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0, size:32}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
+var enemyOldPosition = {x:enemy.x, y:enemy.y};
 
 var boomerang = {speed:1.5, x:0, y:0, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, thrown:false, timeThrown:0, frame:0, currentFrame:0, maxFrames:15, size:32}
 boomerang.image = new Image();
@@ -65,7 +67,7 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var endTime = 190;
+var endTime = 180;
 var currentTime = 0;
 var endTimer;
 
@@ -74,6 +76,8 @@ var craftInv = [];
 
 var mapFarm = [];
 var mapCollidable = [];
+var mapCollidableArea1 = [];
+var warpZone = [];
 
 var aud_Music = new Audio ("audio/mus_Main.mp3");
 aud_Music.loop = true;
@@ -101,12 +105,12 @@ var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "f
 /*Starts at 41*/ "mFloorM", "mFloorU", "mFloorD", "mFloorL", "mFloorR", "mFloorTopL", "mFloorTopR", "mFloorBotL", "mFloorBotR",
 /*Starts at 50*/ "mFloorHorL", "mFloorHorM", "mFloorHorR", "mFloorVertU", "mFloorVertM", "mFloorVertD", "mFloorDot",
 /*Starts at 57*/ "tWallM", "tWallU", "tWallD", "tWallL", "tWallR", "wall",
-/*Starts at 63*/ "doorU", "doorD", "doorL", "doorR"];
+/*Starts at 63*/ "doorU", "doorD", "doorL", "doorR", "warpArea1"];
 var images = [];
 
 var map =
 [
-	[18,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
+	[18,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,67,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
 	[17,46,42,42,42,42,42,42,42,42,42,47,16,50,47,16,46,42,42,47,16,46,42,42,42,47,16,46,42,42,42,47,16,46,42,42,42,47,16,46,42,47,16,53,16,53,16,53,17],
 	[17,54,16,44,49,16,48,45,16,54,16,54,16,16,54,16,48,41,43,43,43,49,16,56,16,48,51,49,16,48,45,16,16,44,45,16,16,44,42,43,43,43,51,41,51,45,16,54,17],
 	[17,54,16,54,18,16,19,54,16,54,16,54,16,46,45,16,16,54,16,16,16,16,16,16,16,16,16,16,16,16,48,52,16,48,41,47,16,44,45,16,16,16,16,54,16,54,16,54,17],
@@ -155,9 +159,35 @@ var map =
 	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],	
 ];
 
+var mapArea1 =
+[
+	/*[115, 101, 101, 101, 101, 101, 101, 101, 101, 116],
+	[102, 105, 106, 106, 106, 106, 106, 106, 107, 103],
+	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
+	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
+	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
+	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
+	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
+	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
+	[102, 108, 112, 112, 112, 112, 112, 112, 113, 103],
+	[117, 104, 104, 104, 104, 104, 104, 104, 104, 118],*/
+	[18,16,16,16,16,16,16,16,16,16,19],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[17,0,0,0,0,0,0,0,0,0,17],
+	[20,16,16,16,16,67,16,16,16,16,21],
+];
 
 var ROWS = map.length;
 var COLS = map[0].length;
+var ROWSAREA1 = mapArea1.length;
+var COLSAREA1 = mapArea1[0].length;
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
@@ -210,6 +240,10 @@ function createMap()
 			{
 				mapCollidable.push(tile);
 			}
+			if (map[row][col] == 67)
+			{
+				warpZone.push(tile);
+			}
 			if (map[row][col] == 38 || map[row][col] == 39 || map[row][col] == 40) 
 			{
 				mapFarm.push(tile);
@@ -217,6 +251,33 @@ function createMap()
 			map[row][col] = tile;		
 		}
 	}
+
+	for (var row = 0; row < ROWSAREA1; row++)
+	{	
+		for (var col = 0; col < COLSAREA1; col++)
+		{
+			var tile = {};
+			tile.x = 64*col;
+			tile.y = 64*row;
+			tile.img = images[mapArea1[row][col]];
+			if (mapArea1[row][col] == 16 || mapArea1[row][col] == 17 || mapArea1[row][col] == 18 || mapArea1[row][col] == 19 ||
+				mapArea1[row][col] == 20 || mapArea1[row][col] == 21 || mapArea1[row][col] == 22 || mapArea1[row][col] == 23 || 
+				mapArea1[row][col] == 24 || mapArea1[row][col] == 25 || mapArea1[row][col] == 26 || mapArea1[row][col] == 27 ||
+				mapArea1[row][col] == 28 || mapArea1[row][col] == 29 || mapArea1[row][col] == 30 || mapArea1[row][col] == 31 || 
+				mapArea1[row][col] == 32 || mapArea1[row][col] == 33 || mapArea1[row][col] == 34 || mapArea1[row][col] == 35 ||
+				mapArea1[row][col] == 36 || mapArea1[row][col] == 37 || mapArea1[row][col] == 57 || mapArea1[row][col] == 58 ||
+				mapArea1[row][col] == 59 || mapArea1[row][col] == 60 || mapArea1[row][col] == 61 || mapArea1[row][col] == 62) 
+			{
+				mapCollidableArea1.push(tile);
+			}
+			if (mapArea1[row][col] == 67)
+			{
+				warpZone.push(tile);
+			}
+			mapArea1[row][col] = tile;		
+		}
+	}
+
 	updateInterval = setInterval(update, 1000/fps);
 }
 
@@ -326,19 +387,67 @@ function checkCollision()
 		if (playerHealth <= 0) {
 			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
 			playerDead();
-		}
-		
+		}		
 	}
-	for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
+
+	if (area == 0)
 	{
-		if (player.x + player.xSize > mapCollidable[ctr].x && player.x < mapCollidable[ctr].x + 64 && player.y + player.ySize > mapCollidable[ctr].y && player.y < mapCollidable[ctr].y + 64) 
+		for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
 		{
-			player.x = oldPosition.x;
-			player.y = oldPosition.y;
+			if (player.x + player.xSize > mapCollidable[ctr].x && player.x < mapCollidable[ctr].x + 64 && player.y + player.ySize > mapCollidable[ctr].y && player.y < mapCollidable[ctr].y + 64) 
+			{
+				player.x = oldPosition.x;
+				player.y = oldPosition.y;
+			}
+		}	
+		for (var ctr = 0; ctr < mapCollidable.length; ctr++) 
+		{
+			if (enemy.x + enemy.size > mapCollidable[ctr].x && enemy.x < mapCollidable[ctr].x + 64 && enemy.y + enemy.size > mapCollidable[ctr].y && enemy.y < mapCollidable[ctr].y + 64) 
+			{
+				enemy.x = enemyOldPosition.x;
+				enemy.y = enemyOldPosition.y;
+			}
 		}
-	}	
-	oldPosition.x = player.x;
-	oldPosition.y = player.y;
+	}
+	
+	if (area == 1) 
+	{
+		for (var ctr = 0; ctr < mapCollidableArea1.length; ctr++) 
+		{
+			if (player.x + player.xSize > mapCollidableArea1[ctr].x && player.x < mapCollidableArea1[ctr].x + 64 && player.y + player.ySize > mapCollidableArea1[ctr].y && player.y < mapCollidableArea1[ctr].y + 64) 
+			{
+				player.x = oldPosition.x;
+				player.y = oldPosition.y;
+			}
+		}
+		for (var ctr = 0; ctr < mapCollidableArea1.length; ctr++) 
+		{
+			if (enemy.x + enemy.size > mapCollidableArea1[ctr].x && enemy.x < mapCollidableArea1[ctr].x + 64 && enemy.y + enemy.size > mapCollidableArea1[ctr].y && enemy.y < mapCollidableArea1[ctr].y + 64) 
+			{
+				enemy.x = enemyOldPosition.x;
+				enemy.y = enemyOldPosition.y;
+			}
+		}
+	}
+
+	for (var ctr = 0; ctr < warpZone.length; ctr++) 
+	{
+		if (player.x + player.xSize > warpZone[ctr].x && player.x < warpZone[ctr].x + 64 && player.y + player.ySize > warpZone[ctr].y && player.y < warpZone[ctr].y + 64) 
+		{
+			if (area == 0)
+			{
+				area = 1;
+				player.x = 328;
+				player.y = 576;
+			}
+			else
+			{
+				area = 0;
+				player.x = 1544;
+				player.y = 64;
+			}
+		}
+	}
 	
 	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
 	{
@@ -355,6 +464,11 @@ function checkCollision()
 		timeStunned = setInterval(stunTimer, 1000);
 		console.log("Boomerang Hit Enemy");
 	}
+
+	oldPosition.x = player.x;
+	oldPosition.y = player.y;
+	enemyOldPosition.x = enemy.x;
+	enemyOldPosition.y = enemy.y;
 }
 
 function animate()
@@ -609,7 +723,6 @@ function render() {
 	}
 	
 	else {
-		
 		surface.clearRect(0,0,mapSizeX,mapSizeY);
 		canvasCraft.clearRect(0,0, elemCraft.width, elemCraft.height);
 		canvasInventory.clearRect(0,0, elemInventory.width, elemInventory.height);
@@ -618,9 +731,18 @@ function render() {
 		surface.setTransform(1,0,0,1,0,0);
 		surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.height/2-24);
 
-		for (var row = 0; row < ROWS; row++) {
-			for ( var col = 0; col < COLS; col++)
-				surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
+		if (area == 0) {
+			for (var row = 0; row < ROWS; row++) {
+				for ( var col = 0; col < COLS; col++)
+					surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
+			}
+		}
+
+		if (area == 1) {
+			for (var row = 0; row < ROWSAREA1; row++) {
+				for ( var col = 0; col < COLSAREA1; col++)
+					surface.drawImage(mapArea1[row][col].img,mapArea1[row][col].x,mapArea1[row][col].y, 64, 64);
+			}
 		}
 
 		for (var ctr = 0; ctr < inventory.length; ctr++) {
