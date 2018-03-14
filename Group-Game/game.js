@@ -20,7 +20,7 @@ player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, stunTime:0, size:32}
+var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, dead:false, stunTime:0, size:32}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 var enemyOldPosition = {x:enemy.x, y:enemy.y};
@@ -28,6 +28,10 @@ var enemyOldPosition = {x:enemy.x, y:enemy.y};
 var boomerang = {speed:1.5, x:0, y:0, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, thrown:false, timeThrown:0, frame:0, currentFrame:0, maxFrames:15, size:32}
 boomerang.image = new Image();
 boomerang.image.src = "img/boomerangSheet.png"
+
+var weapon = {x:0, y:0, attack:false, dirX:0, dirY:0, vert:0, hor:0, frame:0, currentFrame:0, maxFrames:15, xSize:0, ySize:0}
+weapon.image = new Image();
+weapon.image.src = "img/axeSheet1.png";
 
 var foodPickup = {x:1920, y:1100, width:64, height:64, used:false}
 foodPickup.image = new Image();
@@ -227,7 +231,7 @@ window.addEventListener("keyup", onKeyUp);
 
 window.addEventListener("click", clickItem);
 
-canvas.addEventListener("mousedown", playerAttack);
+canvas.addEventListener("mousedown", boomerangAttack);
 
 createMap();
 
@@ -371,7 +375,7 @@ function stunTimer()
 	}
 }
 
-function playerAttack(e)
+function boomerangAttack(e)
 {
 	if (!mainMenuOpen) {
 		if (boomerang.thrown == false)
@@ -391,6 +395,51 @@ function playerAttack(e)
 	}
 }
 
+function meleeAttack() 
+{
+	if (!mainMenuOpen && inventory.includes(axePickup)) 
+	{
+		if(player.dir == 0) 
+		{
+			weapon.image.src = "img/axeSheet1.png";
+			weapon.xSize = 128;
+			weapon.ySize = 64;
+			weapon.vert = 0;
+			weapon.dirX = -32;
+			weapon.dirY = -48; 
+		}
+		if(player.dir == 1) 
+		{
+			weapon.image.src = "img/axeSheet2.png";
+			weapon.xSize = 64;
+			weapon.ySize = 128;
+			weapon.hor = 1;
+			weapon.dirX = 32;
+			weapon.dirY = -12; 
+		}
+		if(player.dir == 2) 
+		{
+			weapon.image.src = "img/axeSheet1.png";
+			weapon.xSize = 128;
+			weapon.ySize = 64;
+			weapon.vert = 1;
+			weapon.dirX = -48;
+			weapon.dirY = 64; 
+		}
+		if(player.dir == 3) 
+		{
+			weapon.image.src = "img/axeSheet2.png";
+			weapon.xSize = 64;
+			weapon.ySize = 128;
+			weapon.hor = 0;
+			weapon.dirX = -48;
+			weapon.dirY = -24; 
+		}	
+		weapon.attack = true;
+		console.log("attack");
+	}	
+}
+
 function objectMovement()
 {
 	enemy.dx = player.x - enemy.x;
@@ -399,7 +448,7 @@ function objectMovement()
 	enemy.angle = Math.atan2(enemy.dy, enemy.dx)* 180/Math.PI;
 	enemy.speedX = enemy.speed * (enemy.dx / enemy.distance);
 	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);	
-	if (enemy.distance < 500 && enemy.stun == false)
+	if (enemy.distance < 500 && enemy.stun == false && enemy.dead == false)
 	{
 		aud_Monster.play();
 		enemy.x += enemy.speedX;
@@ -456,7 +505,7 @@ function checkCollision()
 		player.y = oldPosition.y;
 	}	
 	
-	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50)
+	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50 && enemy.dead == false)
 	{	
 		playerHealth--;
 		player.x += enemy.speedX*200;
@@ -588,6 +637,13 @@ function checkCollision()
 		console.log("Boomerang Hit Enemy");
 	}
 
+	if (player.x + weapon.dirX + weapon.xSize > enemy.x + 20 && player.x + weapon.dirX < enemy.x + 28 && player.y + weapon.dirY + weapon.ySize > enemy.y + 28 && player.y + weapon.dirY < enemy.y + 50 && weapon.attack == true)
+	{
+		aud_Monster.pause();
+		enemy.dead = true;
+		console.log("Weapon Hit Enemy");
+	}
+
 	oldPosition.x = player.x;
 	oldPosition.y = player.y;
 	enemyOldPosition.x = enemy.x;
@@ -617,6 +673,21 @@ function animate()
 			boomerang.currentFrame = 0;
 			if (boomerang.frame == 7)
 				boomerang.frame = 0;
+		}
+	}
+
+	if (weapon.attack == true)
+	{
+		weapon.currentFrame++;
+		if (weapon.currentFrame == weapon.maxFrames)
+		{
+			weapon.frame++;
+			weapon.currentFrame = 0;
+			if (weapon.frame == 3)
+			{
+				weapon.frame = 0;
+				weapon.attack = false;
+			}
 		}
 	}
 }
@@ -731,10 +802,12 @@ function onKeyDown(event)
 	    case 83: // S
 	    	downPressed = true;
 	    	player.idle = false;
-	    	break;
-			
+	    	break;			
 		case 69: // E
 			openCraftMenu();
+			break;
+		case 32: // Space Bar
+			meleeAttack();
 			break;
 	}
 }
@@ -804,7 +877,7 @@ function playerDead() {
 function restartGameTimer()
 {
 	restartTime--;
-	document.getElementById("endGame").innerHTML = "You Died... Restaring In " + restartTime;
+	document.getElementById("endGame").innerHTML = "Restaring In " + restartTime;
 	if (restartTime <= 0)
 		location.reload();
 }
@@ -818,6 +891,8 @@ function endGameTimer()
 	{
 		document.getElementById("timer").innerHTML = "Time Left: " + timeMinutes + " : " + timeSeconds;
 		currentTime++;
+		if (enemy.dead == true)
+			gameOver();
 	}
 	else if (currentTime > endTime) 
 		gameOver();	
@@ -827,11 +902,12 @@ function gameOver()
 {
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
+	setInterval(restartGameTimer,1000);
 	aud_Music.pause();	
 	
-	if (inventory.includes(axePickup)) {
+	if (enemy.dead == true) {
 		aud_Win.play();
-		document.getElementById("endGame").innerHTML = "You Got The Axe! You Win!";
+		document.getElementById("endGame").innerHTML = "You Defeated The Enemy! You Win!";
 		document.getElementById("endGame").style.visibility = "visible";
 	}
 	else {
@@ -842,7 +918,8 @@ function gameOver()
 	}
 }
 
-function render() {
+function render() 
+{
 	if (mainMenuOpen) {
 		surface.clearRect(0,0,canvas.width,canvas.height);
 		surface.setTransform(1,0,0,1,0,0);
@@ -914,7 +991,15 @@ function render() {
 			surface.drawImage(rockPickup.image, rockPickup.x, rockPickup.y);
 			
 		surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
-		surface.drawImage(enemy.image, enemy.x, enemy.y);
+		if (!enemy.dead == true)
+			surface.drawImage(enemy.image, enemy.x, enemy.y);
+
+		if (weapon.attack == true) {
+			if (player.dir == 0 || player.dir == 2)
+				surface.drawImage(weapon.image, weapon.frame*128, weapon.vert*64, 128, 64, player.x + weapon.dirX, player.y + weapon.dirY, 128, 64)
+			if (player.dir == 1 || player.dir == 3)
+				surface.drawImage(weapon.image, weapon.hor*64, weapon.frame*128, 64, 128, player.x + weapon.dirX, player.y + weapon.dirY, 64, 128)
+		}
 
 		if (boomerang.thrown == true)
 			surface.drawImage(boomerang.image, boomerang.frame*68, 0, 68, 68, boomerang.x, boomerang.y, boomerang.size, boomerang.size);
