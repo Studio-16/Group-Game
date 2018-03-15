@@ -15,7 +15,7 @@ var mapSizeX = 3136;
 var mapSizeY = 3008;
 var area = 0;
 
-var player = {x:mapSizeX/2-24, y:mapSizeY/2-24, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
+var player = {x:mapSizeX/2-24, y:mapSizeY/2-100, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
 player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
@@ -37,9 +37,13 @@ var foodPickup = {x:1920, y:1100, width:64, height:64, used:false}
 foodPickup.image = new Image();
 foodPickup.image.src = "img/carrot.png";
 
-var treePickup = {x: 1400, y:1400, width:64, height:64, used:false}
-treePickup.image = new Image();
-treePickup.image.src = "img/treeSingle.png";
+var tree = {x: 1408, y:1536, width:64, height:64, used:false}
+tree.image = new Image();
+tree.image.src = "img/treeSingle.png";
+
+var sign = {x:1280, y:1280, width:64, height:64}
+sign.image = new Image();
+sign.image.src = "img/sign.png";
 
 var stickPickup = {x:456, y:128, width:64, height:64, used:false}
 stickPickup.image = new Image();
@@ -52,6 +56,10 @@ rockPickup.image.src = "img/rock.png";
 var axePickup = {x:0, y:0, width:64, height:64, used:false}
 axePickup.image = new Image();
 axePickup.image.src = "img/axe.png";
+
+var logPickup = {x:0, y:0, width:64, height:64, used:false}
+logPickup.image = new Image();
+logPickup.image.src = "img/logs.png";
 
 var crftPlus = {}
 crftPlus.image = new Image();
@@ -107,6 +115,8 @@ aud_Win.volume = 0.5;
 
 var aud_Lose = new Audio("audio/mus_Lose.wav");
 aud_Lose.volume = 0.5;
+
+var textBoxOpen = false;
 	
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
@@ -117,7 +127,7 @@ var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "f
 /*Starts at 41*/ "mFloorM", "mFloorU", "mFloorD", "mFloorL", "mFloorR", "mFloorTopL", "mFloorTopR", "mFloorBotL", "mFloorBotR",
 /*Starts at 50*/ "mFloorHorL", "mFloorHorM", "mFloorHorR", "mFloorVertU", "mFloorVertM", "mFloorVertD", "mFloorDot",
 /*Starts at 57*/ "tWallM", "tWallU", "tWallD", "tWallL", "tWallR", "wall",
-/*Starts at 63*/ "doorU", "doorD", "doorL", "doorR", "warpArea1", "warpArea2"];
+/*Starts at 63*/ "doorU", "doorD", "doorL", "doorR", "warpArea1", "warpArea2", "bridge"];
 var images = [];
 
 var map =
@@ -146,6 +156,57 @@ var map =
 	[17,54,62,54,62,62,48,51,41,42,41,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,45,62,46,45,62,44,41,51,45,62,17],
 	[17,54,62,54,62,53,62,62,44,43,41,45,65,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,66,44,45,62,44,49,62,44,45,62,48,49,17],
 	[17,54,62,54,62,48,51,51,45,62,54,55,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,45,62,54,62,62,44,49,62,62,62,17],
+	[17,53,62,54,62,62,62,62,54,62,48,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,49,62,44,47,62,54,62,62,46,42,62],
+	[17,46,51,49,62,50,43,42,41,47,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,54,62,62,44,45,62,44,47,62,48,41,62],
+	[17,54,62,62,62,62,62,48,41,49,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,47,62,44,45,62,44,45,62,62,54,17],
+	[17,54,62,46,42,47,62,62,54,62,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,48,45,62,44,45,62,44,43,42,42,45,17],
+	[17,54,62,54,62,48,47,62,44,52,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,62,54,62,44,45,62,56,62,48,43,49,17],
+	[17,54,62,54,62,62,54,62,54,62,62,54,17,3,8,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,46,49,62,44,45,62,62,62,62,62,62,17],
+	[17,54,62,44,47,62,54,62,44,47,62,54,17,13,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,54,62,62,44,45,62,50,42,47,62,53,17],
+	[17,54,62,44,45,62,54,62,44,49,62,54,17,13,25,22,22,22,26,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,47,62,44,49,62,62,44,43,42,45,17],
+	[17,54,62,44,45,62,54,62,54,62,62,54,17,27,22,22,22,22,30,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,48,41,42,45,62,62,46,49,62,44,49,17],
+	[17,54,62,44,45,62,54,62,54,62,62,56,17,29,24,24,24,30,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,17,62,48,43,43,52,62,56,62,62,54,62,17],
+	[17,54,62,44,45,62,54,62,44,47,62,62,20,16,16,16,16,16,16,16,16,16,16,16,64,16,16,16,16,16,16,16,16,16,16,16,21,62,62,62,62,62,62,62,62,62,44,47,17],
+	[17,54,62,44,43,51,41,51,41,45,62,48,43,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,47,62,46,51,51,51,51,51,51,51,51,51,52,62,62,54,17],
+	[17,54,62,54,62,62,54,62,44,45,62,62,62,48,43,41,43,43,43,49,62,48,43,43,43,43,43,49,62,48,49,62,48,42,49,62,62,62,62,62,62,62,62,62,62,62,46,45,17],
+	[17,54,62,54,62,46,49,62,44,43,52,62,62,62,62,54,62,62,62,62,62,62,62,62,62,62,62,62,62,62,62,62,62,54,62,62,46,42,51,47,62,46,51,42,47,62,44,49,17],
+	[17,54,62,54,62,54,62,62,54,62,62,62,53,62,46,41,51,51,51,51,42,42,47,62,62,46,51,51,51,52,62,53,62,54,62,50,43,45,62,48,51,45,62,48,49,62,54,62,17],
+	[17,54,62,54,62,54,62,46,49,62,44,42,43,51,43,49,62,62,62,62,48,43,45,62,62,54,62,62,54,62,62,54,62,54,62,62,62,54,62,62,62,54,62,62,62,62,44,47,17],
+	[17,54,62,54,62,54,62,54,62,62,44,45,62,62,62,62,62,46,47,62,62,62,48,42,42,49,62,46,45,62,46,41,51,43,51,51,51,49,62,62,46,43,51,51,52,62,44,45,17],
+	[17,54,62,54,62,54,62,54,62,50,41,41,51,51,51,51,51,43,43,51,47,62,62,48,49,62,62,44,49,62,48,49,62,62,62,62,62,62,62,46,49,62,62,62,62,62,44,45,17],
+	[17,54,62,54,62,54,62,54,62,62,44,45,62,62,62,62,62,62,62,62,48,47,62,62,62,62,46,49,62,62,62,62,62,46,42,51,42,42,51,45,62,62,46,51,47,62,48,45,17],
+	[17,54,62,62,50,49,62,48,47,62,48,41,42,42,42,42,42,42,47,62,62,48,51,51,51,51,49,62,62,62,50,51,42,43,49,62,48,45,62,48,52,62,54,62,54,62,62,54,17],
+	[17,44,47,62,62,62,62,62,54,62,62,48,43,43,43,43,43,43,41,47,62,62,62,62,62,62,62,62,53,62,62,62,54,62,62,62,62,54,62,62,62,62,54,62,44,47,62,54,17],
+	[17,48,43,51,51,51,51,51,43,52,62,62,62,62,62,62,62,62,48,43,51,51,51,51,51,51,51,51,43,51,51,51,43,51,51,52,62,48,51,51,51,51,49,62,44,45,62,54,17],
+	[20,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,68,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,21],	
+];
+
+var mapBridge =
+[
+	[18,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,67,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
+	[17,46,42,42,42,42,42,42,42,42,42,47,16,50,47,16,46,42,42,47,16,46,42,42,42,47,16,46,42,42,42,47,16,46,42,42,42,47,16,46,42,47,16,53,16,53,16,53,17],
+	[17,54,16,44,49,16,48,45,16,54,16,54,16,16,54,16,48,41,43,43,43,49,16,56,16,48,51,49,16,48,45,16,16,44,45,16,16,44,42,43,43,43,51,41,51,45,16,54,17],
+	[17,54,16,54,18,16,19,54,16,54,16,54,16,46,45,16,16,54,16,16,16,16,16,16,16,16,16,16,16,16,48,52,16,48,41,47,16,44,45,16,16,16,16,54,16,54,16,54,17],
+	[17,54,16,56,16,53,16,54,16,54,16,54,16,48,43,49,16,48,49,16,48,51,43,43,51,45,16,46,51,42,42,45,16,16,48,41,51,42,45,16,16,53,16,54,16,54,16,54,17],
+	[17,54,62,62,62,54,62,54,62,56,62,56,62,62,54,62,48,43,49,62,48,49,62,48,51,43,43,51,45,62,46,51,42,42,45,62,62,48,41,51,42,45,62,54,62,54,62,54,17],
+	[17,48,51,47,62,54,62,54,62,62,62,62,62,46,49,62,62,62,62,62,62,62,62,62,62,62,62,62,48,51,49,62,48,43,41,52,62,62,54,62,48,45,62,56,62,48,51,45,17],
+	[17,62,62,48,51,45,62,48,51,42,51,47,62,54,62,62,46,42,47,62,46,47,62,46,42,42,47,62,62,62,62,62,62,62,54,62,62,46,47,62,62,54,62,62,62,62,62,54,17],
+	[17,53,62,62,62,54,62,62,62,54,62,54,62,44,51,51,43,43,41,51,41,41,42,41,41,41,41,42,51,42,42,42,51,42,41,52,62,44,45,62,46,45,62,46,47,62,44,45,17],
+	[17,48,51,47,62,48,54,54,42,49,62,54,62,56,62,62,62,62,56,62,48,43,43,43,43,43,43,49,62,48,43,49,62,48,49,62,62,48,49,62,48,43,51,41,43,47,62,56,17],
+	[17,62,62,54,62,62,62,62,54,62,62,54,18,16,16,16,16,16,16,16,16,16,16,16,63,16,16,16,16,16,16,16,16,16,16,16,19,62,62,62,62,62,62,56,62,48,49,62,17],
+	[17,47,62,44,51,51,42,51,45,62,46,45,17,5,1,1,11,27,23,23,23,28,5,1,1,1,1,1,1,1,10,1,10,1,10,6,17,46,47,62,53,62,62,62,62,62,62,62,17],
+	[17,54,62,54,62,62,54,62,54,62,44,45,17,3,0,4,27,22,22,22,22,30,3,0,0,0,0,0,0,4,38,13,38,13,38,13,17,44,45,62,48,47,62,53,62,46,42,52,17],
+	[17,54,62,48,47,62,54,62,54,62,44,45,17,3,0,4,25,22,22,22,26,5,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,44,45,62,62,54,62,44,42,43,45,62,17],
+	[17,54,62,62,54,62,56,62,54,62,48,45,17,3,0,8,25,22,22,22,26,3,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,48,45,62,46,49,62,44,45,62,44,47,17],
+	[17,44,47,62,54,62,62,62,54,62,62,45,17,3,4,27,22,22,22,22,30,3,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,62,54,62,54,62,62,44,49,62,44,45,17],
+	[17,44,45,62,48,51,47,62,44,47,62,54,17,3,4,25,22,22,22,26,5,0,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,46,45,62,54,47,62,54,62,62,44,45,17],
+	[17,44,45,62,62,62,54,62,44,49,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,4,39,13,39,13,39,13,17,44,45,62,44,41,51,41,47,62,44,45,17],
+	[17,44,43,51,47,62,54,62,54,62,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,4,40,13,40,13,40,13,17,44,49,62,44,45,62,48,45,62,44,49,17],
+	[17,54,62,62,54,62,54,62,54,62,46,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,1,0,1,0,1,4,17,54,62,62,48,45,62,62,54,62,54,62,17],
+	[17,54,62,46,49,62,54,62,54,62,44,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,47,62,62,54,62,46,45,62,44,52,17],
+	[17,54,62,54,62,62,48,51,41,42,41,45,17,3,4,69,69,69,69,69,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,45,62,46,45,62,44,41,51,45,62,17],
+	[17,54,62,54,62,53,62,62,44,43,41,45,65,3,4,69,69,69,69,69,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,66,44,45,62,44,49,62,44,45,62,48,49,17],
+	[17,54,62,54,62,48,51,51,45,62,54,55,17,3,4,69,69,69,69,69,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,45,62,54,62,62,44,49,62,62,62,17],
 	[17,53,62,54,62,62,62,62,54,62,48,45,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,49,62,44,47,62,54,62,62,46,42,62],
 	[17,46,51,49,62,50,43,42,41,47,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,54,62,62,44,45,62,44,47,62,48,41,62],
 	[17,54,62,62,62,62,62,48,41,49,62,54,17,3,4,25,22,22,22,26,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,17,44,47,62,44,45,62,44,45,62,62,54,17],
@@ -440,6 +501,70 @@ function meleeAttack()
 	}	
 }
 
+function interactWith()
+{
+	if (player.x + player.xSize - 8 > sign.x - 32 && player.x < sign.x + 88 && player.y + player.ySize > sign.y - 32 && player.y < sign.y + 66)
+	{
+		if (inventory.includes(logPickup)) {
+			mapCollidable = [];
+			
+			map = mapBridge;
+			
+			for (var row = 0; row < ROWS; row++)
+			{	
+				for (var col = 0; col < COLS; col++)
+				{
+					var tile = {};
+					tile.x = 64*col;
+					tile.y = 64*row;
+					tile.img = images[map[row][col]];
+					if (map[row][col] == 16 || map[row][col] == 17 || map[row][col] == 18 || map[row][col] == 19 ||
+						map[row][col] == 20 || map[row][col] == 21 || map[row][col] == 22 || map[row][col] == 23 || 
+						map[row][col] == 24 || map[row][col] == 25 || map[row][col] == 26 || map[row][col] == 27 ||
+						map[row][col] == 28 || map[row][col] == 29 || map[row][col] == 30 || map[row][col] == 31 || 
+						map[row][col] == 32 || map[row][col] == 33 || map[row][col] == 34 || map[row][col] == 35 ||
+						map[row][col] == 36 || map[row][col] == 37 || map[row][col] == 57 || map[row][col] == 58 ||
+						map[row][col] == 59 || map[row][col] == 60 || map[row][col] == 61 || map[row][col] == 62) 
+					{
+						mapCollidable.push(tile);
+					}
+					if (map[row][col] == 67)
+					{
+						warpZone1.push(tile);
+					}
+					if (map[row][col] == 68)
+					{
+						warpZone2.push(tile);
+					}
+					if (map[row][col] == 38 || map[row][col] == 39 || map[row][col] == 40) 
+					{
+						mapFarm.push(tile);
+					}
+					map[row][col] = tile;		
+				}
+			}
+
+			var remove = inventory.indexOf(logPickup);
+		    if (remove !== -1) {
+		        inventory.splice(remove, 1);
+		    }
+			console.log("Building Bridge");
+		}
+
+		else if (textBoxOpen == false) {
+			textBoxOpen = true
+			document.getElementById("textBox").innerHTML = "Tip: Use logs to build a bridge here. First you'll need an axe!";
+			document.getElementById("textBox").style.visibility = "visible";
+			console.log("interact");
+		}
+		else {
+			document.getElementById("textBox").style.visibility = "hidden";
+			textBoxOpen = false;
+			console.log("interactFalse");
+		}
+	}
+}
+
 function objectMovement()
 {
 	enemy.dx = player.x - enemy.x;
@@ -499,10 +624,23 @@ function checkCollision()
 			}
 	}
 
-	if (player.x + player.xSize - 8 > treePickup.x && player.x < treePickup.x + 56 && player.y + player.ySize > treePickup.y && player.y < treePickup.y + 32)
+	if (player.x + player.xSize - 8 > tree.x && player.x < tree.x + 56 && player.y + player.ySize > tree.y && player.y < tree.y + 32 && tree.used == false)
 	{
 		player.x = oldPosition.x;
 		player.y = oldPosition.y;
+	}	
+
+	if (player.x + player.xSize - 8 > sign.x - 32 && player.x < sign.x + 88 && player.y + player.ySize > sign.y - 32 && player.y < sign.y + 66)
+	{
+		if (player.x + player.xSize - 8 > sign.x && player.x < sign.x + 56 && player.y + player.ySize > sign.y && player.y < sign.y + 32)
+		{
+			player.x = oldPosition.x;
+			player.y = oldPosition.y;
+		}
+	}
+	else {
+		textBoxOpen = false;
+		document.getElementById("textBox").style.visibility = "hidden";
 	}	
 	
 	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50 && enemy.dead == false)
@@ -578,13 +716,13 @@ function checkCollision()
 
 	for (var ctr = 0; ctr < warpZone0.length; ctr++) 
 	{
-		if (player.x + player.xSize > warpZone0[ctr].x && player.x < warpZone0[ctr].x + 64 && player.y + player.ySize > warpZone0[ctr].y && player.y < warpZone0[ctr].y + 64) 
+		if (player.x + player.xSize - 8 > warpZone0[ctr].x && player.x < warpZone0[ctr].x + 56 && player.y + player.ySize > warpZone0[ctr].y && player.y < warpZone0[ctr].y + 32) 
 		{
 			if (area == 1)
 			{
 				area = 0;
 				player.x = 1544;
-				player.y = 64;
+				player.y = 32;
 			}
 			if (area == 2)
 			{
@@ -597,7 +735,7 @@ function checkCollision()
 
 	for (var ctr = 0; ctr < warpZone1.length; ctr++) 
 	{
-		if (player.x + player.xSize > warpZone1[ctr].x && player.x < warpZone1[ctr].x + 64 && player.y + player.ySize > warpZone1[ctr].y && player.y < warpZone1[ctr].y + 64) 
+		if (player.x + player.xSize - 8 > warpZone1[ctr].x && player.x < warpZone1[ctr].x + 56 && player.y + player.ySize > warpZone1[ctr].y && player.y < warpZone1[ctr].y + 32) 
 		{
 			if (area == 0)
 			{
@@ -610,13 +748,13 @@ function checkCollision()
 
 	for (var ctr = 0; ctr < warpZone2.length; ctr++) 
 	{
-		if (player.x + player.xSize > warpZone2[ctr].x && player.x < warpZone2[ctr].x + 64 && player.y + player.ySize > warpZone2[ctr].y && player.y < warpZone2[ctr].y + 64) 
+		if (player.x + player.xSize - 8 > warpZone2[ctr].x && player.x < warpZone2[ctr].x + 56 && player.y + player.ySize > warpZone2[ctr].y && player.y < warpZone2[ctr].y + 32) 
 		{
 			if (area == 0)
 			{
 				area = 2;
 				player.x = 456;
-				player.y = 64;
+				player.y = 32;
 			}
 		}
 	}
@@ -628,6 +766,7 @@ function checkCollision()
 		boomerang.timeThrown = 0;
 		console.log("Collide With Boomerang");
 	}
+
 	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
 	{
 		aud_Monster.pause();
@@ -643,6 +782,17 @@ function checkCollision()
 		enemy.dead = true;
 		console.log("Weapon Hit Enemy");
 	}
+
+	if (player.x + weapon.dirX + weapon.xSize > tree.x && player.x + weapon.dirX < tree.x + 64 && player.y + weapon.dirY + weapon.ySize > tree.y && player.y + weapon.dirY < tree.y + 64 && weapon.attack == true)
+	{
+		if (!tree.used) 
+		{
+			inventory.push(logPickup);
+			tree.used = true;
+		}
+		console.log("Axe Hit Tree");
+	}
+
 
 	oldPosition.x = player.x;
 	oldPosition.y = player.y;
@@ -775,7 +925,7 @@ function isIntersect(point, elem) {
 }
 
 function craftItem(item1, item2) {
-	if ((item1 == foodPickup && item2 == stickPickup) || (item1 == stickPickup && item2 == rockPickup)) {
+	if (item1 == stickPickup && item2 == rockPickup) {
 		craftInv.push(axePickup);
 	}
 	
@@ -805,6 +955,9 @@ function onKeyDown(event)
 	    	break;			
 		case 69: // E
 			openCraftMenu();
+			break;
+		case 70: // F
+			interactWith();
 			break;
 		case 32: // Space Bar
 			meleeAttack();
@@ -891,8 +1044,6 @@ function endGameTimer()
 	{
 		document.getElementById("timer").innerHTML = "Time Left: " + timeMinutes + " : " + timeSeconds;
 		currentTime++;
-		if (enemy.dead == true)
-			gameOver();
 	}
 	else if (currentTime > endTime) 
 		gameOver();	
@@ -981,8 +1132,11 @@ function render()
 		if (!inventory.includes(foodPickup) || craftInv.includes(foodPickup))
 			surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
 			
-		if (!treePickup.used)
-			surface.drawImage(treePickup.image, treePickup.x, treePickup.y);
+		if (!tree.used)
+			surface.drawImage(tree.image, tree.x, tree.y);
+
+		if (area == 0)
+			surface.drawImage(sign.image, sign.x, sign.y);
 
 		if (!stickPickup.used && area == 1)
 			surface.drawImage(stickPickup.image, stickPickup.x, stickPickup.y);
