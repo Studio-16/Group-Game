@@ -962,6 +962,12 @@ function onKeyDown(event)
 		case 32: // Space Bar
 			meleeAttack();
 			break;
+		case 80:
+			if(player.speed < 5)
+				player.speed = 5;
+			else
+				player.speed = 1;
+			break;
 	}
 }
 
