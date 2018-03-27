@@ -11,6 +11,13 @@ var craftInvOpen = false;
 var elemHealth = document.getElementById("health");
 var canvasHealth = elemHealth.getContext('2d');
 
+var elemRestart = document.getElementById("restart");
+var canvasRestart = elemRestart.getContext('2d');
+
+var elemPause = document.getElementById("pause");
+var canvasPause = elemPause.getContext('2d');
+
+
 var mapSizeX = 3136;
 var mapSizeY = 3008;
 var area = 0;
@@ -20,7 +27,7 @@ player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:2184, y:1152, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, dead:false, stunTime:0, size:32}
+var enemy = {speed:.5, x:2184, y:1146, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, dead:false, stunTime:0, size:32}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 var enemyOldPosition = {x:enemy.x, y:enemy.y};
@@ -37,7 +44,7 @@ var foodPickup = {x:1920, y:1100, width:64, height:64, used:false}
 foodPickup.image = new Image();
 foodPickup.image.src = "img/carrot.png";
 
-var tree = {x: 1408, y:1536, width:64, height:64, used:false}
+var tree = {x: 1408, y:1476, width:64, height:64, used:false}
 tree.image = new Image();
 tree.image.src = "img/treeSingle.png";
 
@@ -86,7 +93,6 @@ var downPressed = false;
 var endTime = 180;
 var currentTime = 0;
 var endTimer;
-var restartTime = 6;
 
 var inventory = [];
 var craftInv = [];
@@ -128,7 +134,20 @@ var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "f
 /*Starts at 50*/ "mFloorHorL", "mFloorHorM", "mFloorHorR", "mFloorVertU", "mFloorVertM", "mFloorVertD", "mFloorDot",
 /*Starts at 57*/ "tWallM", "tWallU", "tWallD", "tWallL", "tWallR", "wall",
 /*Starts at 63*/ "doorU", "doorD", "doorL", "doorR", "warpArea1", "warpArea2", "bridge"];
+
+var imgStr1 =   ["1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
+				 "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38",
+				 "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53",
+				 "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67", "68",
+				 "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83",
+				 "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98",
+				 "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113",
+				 "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "127", "128",
+				 "129", "130", "131", "132", "133", "134", "135", "136", "137", "138", "139", "140", "141", "142", "143", "144",
+				 "145", "146", "147", "148", "149"];
+
 var images = [];
+var images1 = [];
 
 var map =
 [
@@ -234,17 +253,7 @@ var mapBridge =
 
 var mapArea1 =
 [
-	/*[115, 101, 101, 101, 101, 101, 101, 101, 101, 116],
-	[102, 105, 106, 106, 106, 106, 106, 106, 107, 103],
-	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
-	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
-	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
-	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
-	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
-	[102, 108, 109, 109, 109, 109, 109, 109, 110, 103],
-	[102, 108, 112, 112, 112, 112, 112, 112, 113, 103],
-	[117, 104, 104, 104, 104, 104, 104, 104, 104, 118],*/
-	[18,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
+	/*[18,16,16,16,16,16,16,16,16,16,16,16,16,16,19],
 	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
 	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
 	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
@@ -258,7 +267,46 @@ var mapArea1 =
 	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
 	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
 	[17,0,0,0,0,0,0,0,0,0,0,0,0,0,17],
-	[20,16,16,16,16,16,16,68,16,16,16,16,16,16,21],
+	[20,16,16,16,16,16,16,68,16,16,16,16,16,16,21],*/
+	[145, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124], 
+	[145, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 146, 58, 58, 58, 58, 147, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124], 
+	[145, 124, 118, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 120, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 118, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 120, 124, 124, 122, 124, 124, 118, 119, 119, 119, 119, 119, 120, 124, 124, 124, 124, 119, 119, 119, 119, 119, 119, 119, 65, 27, 28, 37, 17, 67, 119, 119, 119, 119, 119, 119, 119, 119, 119, 120, 124, 124, 124, 124, 124], 
+	[145, 124, 126, 38, 5, 143, 138, 8, 33, 5, 38, 6, 38, 29, 30, 38, 120, 124, 124, 124, 124, 124, 124, 124, 124, 124, 133, 4, 4, 4, 66, 143, 139, 139, 139, 139, 138, 40, 7, 17, 17, 38, 4, 31, 32, 4, 131, 132, 130, 132, 133, 38, 4, 143, 138, 8, 7, 4, 124, 124, 124, 124, 6, 7, 26, 4, 44, 45, 17, 73, 64, 86, 87, 62, 75, 7, 7, 7, 4, 4, 4, 4, 34, 4, 4, 124, 124, 124, 124, 124], 
+	[145, 124, 126, 1, 7, 144, 137, 7, 21, 15, 9, 9, 9, 12, 9, 9, 130, 122, 122, 122, 122, 122, 122, 122, 122, 130, 9, 9, 7, 7, 4, 144, 141, 141, 141, 141, 137, 7, 49, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 38, 38, 4, 4, 144, 137, 37, 17, 4, 124, 124, 124, 125, 7, 35, 115, 116, 116, 117, 4, 81, 82, 70, 95, 82, 83, 40, 143, 138, 40, 7, 4, 34, 35, 4, 4, 4, 124, 124, 124, 124], 
+	[145, 124, 126, 7, 41, 6, 5, 19, 31, 32, 9, 15, 33, 49, 16, 5, 128, 124, 124, 124, 121, 122, 124, 124, 124, 4, 5, 12, 12, 10, 7, 36, 1, 66, 38, 17, 1, 1, 1, 1, 1, 33, 10, 1, 15, 16, 14, 16, 15, 1, 1, 1, 17, 1, 38, 17, 1, 1, 124, 124, 124, 125, 7, 1, 123, 124, 124, 125, 1, 81, 82, 70, 82, 82, 83, 7, 144, 7, 138, 8, 1, 1, 1, 1, 1, 4, 124, 124, 124, 124], 
+	[145, 124, 126, 143, 138, 8, 5, 143, 138, 8, 43, 9, 42, 5, 7, 7, 128, 124, 124, 124, 124, 124, 124, 124, 124, 5, 50, 38, 5, 9, 9, 16, 49, 1, 1, 31, 32, 1, 1, 15, 14, 16, 1, 1, 1, 38, 1, 1, 1, 38, 1, 1, 1, 1, 1, 1, 1, 115, 124, 124, 133, 1, 1, 1, 131, 132, 132, 133, 1, 89, 78, 79, 78, 78, 91, 1, 1, 1, 1, 1, 14, 9, 9, 14, 1, 4, 124, 124, 124, 124], 
+	[145, 124, 126, 144, 8, 38, 38, 144, 137, 7, 5, 15, 9, 5, 26, 7, 128, 124, 124, 124, 124, 124, 124, 124, 133, 127, 38, 41, 4, 4, 14, 10, 10, 4, 4, 4, 13, 38, 6, 6, 6, 6, 6, 4, 143, 138, 8, 7, 4, 4, 4, 4, 37, 4, 41, 6, 115, 124, 124, 133, 6, 13, 9, 9, 9, 12, 12, 9, 12, 13, 9, 9, 9, 12, 9, 9, 12, 9, 9, 9, 9, 9, 14, 11, 14, 4, 4, 131, 124, 124], 
+	[145, 124, 126, 1, 144, 8, 2, 2, 37, 2, 5, 21, 9, 13, 18, 6, 128, 124, 124, 124, 124, 124, 124, 133, 127, 127, 4, 7, 17, 5, 5, 4, 15, 9, 9, 3, 3, 37, 3, 6, 6, 6, 6, 66, 144, 137, 7, 4, 18, 18, 16, 4, 66, 41, 4, 115, 124, 124, 133, 5, 9, 16, 7, 5, 14, 15, 15, 2, 5, 4, 4, 5, 16, 16, 5, 5, 5, 5, 14, 14, 44, 45, 9, 14, 5, 4, 4, 127, 124, 124], 
+	[145, 124, 126, 1, 5, 2, 2, 5, 5, 49, 5, 16, 15, 43, 6, 7, 128, 124, 124, 124, 124, 133, 50, 3, 3, 14, 7, 4, 20, 4, 49, 4, 5, 5, 16, 9, 3, 3, 42, 148, 58, 58, 58, 58, 58, 58, 149, 66, 4, 4, 15, 13, 4, 4, 4, 123, 124, 133, 4, 13, 7, 5, 5, 5, 5, 25, 36, 35, 4, 4, 26, 4, 4, 5, 6, 6, 5, 13, 16, 21, 5, 14, 9, 5, 5, 4, 4, 26, 124, 124], 
+	[145, 124, 134, 1, 52, 53, 2, 5, 38, 5, 9, 9, 9, 9, 40, 7, 128, 124, 124, 124, 124, 51, 36, 11, 3, 3, 36, 37, 4, 20, 4, 4, 4, 41, 17, 16, 9, 3, 3, 73, 87, 74, 74, 74, 87, 63, 75, 8, 7, 7, 5, 4, 4, 13, 130, 122, 122, 130, 13, 7, 5, 5, 5, 5, 6, 6, 6, 4, 4, 6, 6, 6, 6, 6, 16, 13, 13, 13, 5, 7, 4, 5, 4, 5, 5, 4, 4, 127, 124, 124], 
+	[145, 124, 124, 117, 6, 5, 2, 5, 5, 15, 9, 49, 16, 5, 5, 6, 128, 124, 124, 124, 124, 117, 14, 3, 3, 3, 52, 53, 148, 58, 58, 149, 38, 4, 44, 45, 9, 3, 3, 81, 95, 82, 82, 82, 72, 71, 83, 40, 7, 1, 5, 5, 13, 13, 51, 123, 124, 4, 4, 143, 8, 137, 8, 7, 6, 6, 25, 35, 6, 7, 4, 43, 4, 13, 13, 13, 4, 115, 116, 47, 116, 117, 5, 143, 138, 8, 7, 127, 124, 124], 
+	[145, 124, 124, 133, 7, 5, 40, 2, 21, 9, 12, 51, 5, 5, 6, 7, 128, 124, 124, 124, 124, 124, 4, 3, 10, 5, 5, 17, 73, 87, 84, 75, 8, 8, 31, 32, 9, 15, 3, 81, 82, 101, 102, 82, 82, 82, 83, 8, 19, 49, 1, 13, 9, 5, 6, 123, 124, 20, 4, 144, 137, 8, 6, 27, 28, 6, 6, 6, 6, 4, 4, 21, 16, 13, 4, 41, 42, 123, 124, 122, 124, 125, 5, 144, 137, 7, 41, 127, 124, 124], 
+	[145, 124, 118, 1, 7, 5, 2, 14, 5, 9, 15, 25, 2, 2, 6, 6, 136, 124, 124, 124, 124, 124, 4, 37, 3, 10, 7, 4, 81, 95, 92, 83, 31, 32, 7, 7, 11, 13, 3, 89, 90, 109, 110, 90, 80, 90, 91, 41, 5, 3, 3, 9, 4, 5, 115, 124, 118, 4, 6, 6, 7, 4, 43, 4, 6, 6, 44, 45, 39, 6, 6, 21, 16, 13, 6, 6, 4, 123, 124, 122, 124, 125, 4, 4, 25, 4, 4, 127, 124, 124], 
+	[145, 124, 126, 1, 7, 6, 26, 5, 21, 9, 5, 5, 27, 28, 5, 115, 124, 124, 124, 124, 124, 133, 143, 138, 8, 7, 13, 7, 81, 70, 82, 83, 8, 66, 7, 20, 7, 9, 3, 3, 34, 8, 8, 40, 8, 7, 5, 5, 5, 3, 9, 10, 4, 115, 124, 124, 126, 5, 66, 4, 4, 4, 4, 4, 4, 4, 4, 40, 4, 4, 4, 4, 4, 13, 13, 4, 4, 131, 132, 130, 132, 133, 6, 6, 42, 4, 4, 127, 124, 124], 
+	[145, 124, 126, 6, 6, 43, 5, 5, 5, 12, 5, 36, 2, 2, 5, 131, 124, 124, 124, 124, 124, 50, 144, 137, 7, 17, 12, 4, 89, 90, 79, 91, 52, 53, 4, 4, 5, 9, 9, 3, 44, 45, 8, 8, 8, 49, 5, 3, 3, 9, 16, 37, 115, 124, 124, 133, 5, 5, 5, 36, 27, 28, 3, 66, 143, 139, 139, 139, 139, 138, 8, 7, 3, 4, 13, 5, 4, 20, 4, 7, 3, 3, 3, 4, 4, 20, 52, 53, 124, 124], 
+	[145, 124, 126, 44, 45, 20, 5, 35, 15, 10, 5, 5, 2, 43, 5, 7, 120, 124, 124, 124, 124, 117, 3, 3, 3, 3, 15, 7, 4, 66, 29, 30, 31, 32, 37, 5, 5, 7, 9, 6, 31, 32, 5, 5, 5, 3, 3, 3, 13, 13, 3, 1, 123, 124, 133, 43, 38, 5, 5, 4, 4, 43, 4, 66, 144, 141, 141, 141, 141, 137, 7, 3, 3, 3, 10, 10, 5, 4, 13, 16, 4, 4, 27, 28, 4, 4, 127, 35, 124, 124], 
+	[145, 124, 126, 38, 33, 5, 37, 140, 21, 9, 43, 142, 39, 20, 13, 7, 128, 124, 124, 124, 124, 124, 124, 117, 4, 3, 41, 17, 20, 7, 143, 139, 139, 139, 138, 8, 7, 7, 6, 9, 12, 12, 12, 6, 43, 44, 45, 9, 9, 2, 3, 1, 123, 124, 26, 4, 148, 58, 58, 58, 58, 58, 58, 58, 58, 58, 149, 2, 2, 35, 20, 8, 7, 7, 5, 16, 10, 10, 2, 2, 43, 2, 2, 21, 2, 4, 4, 127, 124, 124], 
+	[145, 124, 126, 7, 7, 37, 5, 140, 41, 12, 6, 142, 8, 36, 5, 7, 128, 124, 124, 124, 124, 124, 124, 124, 117, 7, 16, 4, 14, 4, 36, 46, 47, 48, 142, 8, 7, 9, 9, 51, 5, 5, 16, 12, 9, 9, 9, 9, 7, 2, 3, 49, 123, 124, 127, 4, 65, 49, 16, 9, 52, 53, 4, 143, 138, 8, 67, 40, 7, 2, 15, 16, 27, 28, 8, 5, 10, 52, 53, 11, 3, 11, 3, 3, 44, 45, 4, 127, 124, 124], 
+	[145, 124, 126, 36, 7, 2, 19, 140, 39, 10, 6, 142, 39, 66, 31, 32, 128, 124, 124, 124, 124, 124, 124, 124, 125, 4, 7, 13, 44, 45, 7, 54, 55, 56, 51, 16, 9, 9, 6, 5, 41, 7, 5, 5, 5, 5, 2, 10, 10, 2, 3, 7, 123, 124, 116, 117, 65, 66, 37, 66, 21, 6, 6, 144, 5, 7, 67, 8, 8, 7, 16, 13, 2, 2, 40, 8, 3, 3, 16, 3, 3, 3, 3, 3, 3, 3, 4, 127, 124, 124], 
+	[145, 124, 126, 23, 34, 43, 5, 140, 6, 12, 23, 142, 8, 16, 37, 7, 128, 124, 124, 124, 124, 124, 124, 124, 125, 4, 15, 4, 4, 4, 14, 7, 6, 9, 6, 9, 6, 6, 5, 4, 4, 36, 4, 50, 5, 5, 5, 5, 9, 9, 7, 1, 131, 124, 124, 125, 73, 74, 85, 86, 74, 74, 74, 74, 74, 87, 75, 40, 7, 4, 4, 2, 2, 2, 2, 2, 41, 10, 10, 7, 3, 3, 3, 3, 3, 4, 26, 127, 124, 124], 
+	[145, 124, 126, 35, 19, 35, 21, 140, 6, 9, 4, 142, 39, 6, 37, 34, 128, 124, 124, 124, 124, 124, 124, 124, 125, 4, 4, 40, 4, 15, 11, 6, 9, 6, 11, 15, 6, 36, 41, 4, 148, 149, 8, 40, 8, 8, 4, 4, 5, 9, 9, 7, 37, 131, 124, 125, 81, 70, 93, 70, 82, 82, 82, 82, 70, 95, 83, 8, 2, 2, 33, 6, 31, 32, 2, 2, 3, 3, 10, 25, 26, 3, 3, 41, 3, 4, 4, 127, 124, 124], 
+	[145, 124, 126, 36, 26, 31, 32, 140, 21, 9, 21, 142, 29, 30, 2, 16, 127, 131, 124, 124, 124, 124, 124, 124, 125, 4, 52, 53, 7, 7, 9, 9, 5, 5, 5, 5, 40, 42, 4, 4, 73, 75, 7, 8, 31, 32, 8, 4, 4, 5, 13, 7, 4, 5, 123, 125, 89, 90, 90, 80, 90, 78, 79, 90, 78, 90, 91, 2, 41, 2, 2, 20, 6, 6, 2, 34, 2, 3, 10, 3, 3, 3, 5, 5, 34, 4, 4, 127, 124, 124], 
+	[145, 124, 126, 20, 143, 139, 139, 139, 139, 139, 139, 139, 139, 139, 138, 40, 7, 5, 124, 124, 124, 124, 124, 124, 125, 4, 4, 36, 14, 4, 7, 5, 5, 15, 5, 5, 5, 40, 4, 49, 81, 83, 7, 4, 40, 4, 4, 18, 4, 4, 2, 9, 4, 5, 123, 125, 6, 44, 45, 4, 4, 4, 4, 4, 4, 25, 137, 2, 2, 2, 2, 41, 2, 6, 6, 6, 13, 3, 10, 3, 3, 49, 3, 5, 5, 25, 4, 127, 124, 124], 
+	[145, 124, 126, 49, 140, 143, 139, 139, 139, 139, 139, 139, 139, 138, 142, 8, 15, 3, 124, 124, 124, 124, 124, 124, 124, 134, 1, 4, 4, 44, 45, 5, 17, 5, 5, 37, 140, 4, 4, 4, 89, 91, 4, 4, 4, 44, 45, 4, 6, 34, 4, 9, 127, 115, 124, 125, 4, 34, 16, 4, 4, 4, 4, 49, 15, 15, 25, 35, 4, 2, 2, 2, 2, 2, 2, 2, 2, 16, 10, 10, 3, 3, 14, 143, 138, 8, 7, 115, 124, 124], 
+	[145, 124, 126, 66, 140, 140, 143, 139, 139, 139, 139, 139, 138, 142, 142, 8, 13, 3, 124, 124, 124, 124, 124, 124, 124, 124, 117, 1, 4, 4, 7, 52, 53, 143, 139, 139, 8, 139, 138, 8, 31, 32, 4, 4, 4, 17, 144, 8, 138, 8, 13, 4, 115, 124, 124, 133, 2, 12, 12, 12, 12, 12, 2, 12, 12, 2, 6, 25, 36, 4, 4, 15, 17, 10, 10, 2, 2, 2, 2, 10, 2, 2, 3, 144, 137, 115, 116, 124, 124, 124], 
+	[145, 124, 126, 41, 140, 140, 140, 143, 139, 139, 139, 138, 142, 142, 142, 8, 7, 5, 124, 124, 124, 124, 124, 124, 124, 124, 124, 116, 117, 1, 4, 4, 4, 144, 141, 141, 141, 141, 137, 40, 7, 6, 6, 42, 6, 6, 6, 144, 137, 8, 130, 122, 122, 122, 122, 130, 12, 15, 4, 27, 28, 6, 6, 7, 7, 2, 11, 11, 9, 9, 9, 9, 9, 6, 16, 11, 11, 11, 11, 11, 13, 14, 13, 4, 128, 124, 124, 124, 124, 124], 
+	[145, 124, 126, 66, 140, 140, 140, 140, 140, 141, 142, 142, 142, 142, 142, 8, 7, 3, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 125, 1, 1, 29, 30, 31, 32, 40, 4, 17, 17, 4, 44, 45, 51, 40, 4, 4, 4, 4, 4, 4, 115, 124, 124, 124, 124, 4, 4, 25, 36, 4, 4, 4, 4, 4, 26, 4, 4, 4, 4, 4, 4, 42, 26, 4, 4, 4, 4, 4, 4, 4, 16, 3, 13, 16, 128, 124, 124, 124, 124, 124], 
+	[145, 124, 126, 49, 140, 140, 140, 144, 141, 141, 141, 137, 142, 142, 142, 8, 16, 4, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 116, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124, 124, 124, 124, 134, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 47, 135, 135, 136, 124, 124, 124, 124, 124], 
+	[145, 124, 126, 66, 140, 140, 144, 141, 141, 141, 141, 141, 137, 142, 142, 40, 13, 3, 124, 124, 124, 124, 124, 121, 122, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 65, 36, 25, 35, 42, 27, 28, 67, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 124, 124, 124, 124, 124], 
+	[145, 124, 126, 66, 140, 144, 141, 141, 141, 141, 141, 141, 141, 137, 142, 8, 7, 115, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 118, 119, 119, 119, 73, 63, 87, 74, 62, 86, 85, 75, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 130, 119, 119, 119, 119, 119, 120, 124, 124], 
+	[145, 124, 126, 41, 144, 141, 141, 141, 141, 141, 141, 141, 141, 141, 137, 7, 3, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 124, 124, 124, 124, 124, 118, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 120, 124, 129, 124, 118, 119, 119, 127, 22, 29, 30, 81, 71, 95, 82, 82, 72, 93, 83, 40, 8, 7, 7, 5, 33, 52, 53, 51, 4, 5, 4, 34, 34, 43, 49, 128, 124, 124], 
+	[145, 124, 126, 1, 35, 6, 31, 32, 1, 26, 26, 1, 1, 1, 9, 1, 128, 124, 124, 124, 124, 124, 124, 121, 122, 122, 122, 122, 122, 122, 124, 124, 124, 126, 51, 143, 139, 139, 139, 139, 138, 8, 7, 7, 17, 127, 127, 127, 35, 42, 49, 127, 127, 127, 127, 127, 127, 21, 127, 52, 53, 66, 22, 81, 82, 82, 82, 82, 72, 82, 83, 8, 39, 7, 18, 44, 45, 6, 11, 11, 11, 11, 4, 6, 143, 138, 8, 128, 124, 124], 
+	[145, 124, 126, 1, 1, 6, 41, 14, 9, 1, 1, 1, 15, 6, 1, 6, 128, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 126, 21, 144, 141, 141, 141, 141, 137, 8, 7, 13, 127, 15, 9, 4, 11, 11, 11, 11, 11, 11, 11, 11, 4, 127, 17, 127, 127, 17, 22, 81, 82, 103, 104, 82, 82, 82, 83, 8, 49, 5, 5, 4, 4, 11, 16, 5, 5, 5, 5, 49, 144, 137, 7, 128, 124, 124], 
+	[145, 124, 134, 1, 4, 35, 13, 13, 41, 6, 9, 6, 1, 1, 1, 1, 128, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 126, 51, 21, 42, 31, 32, 34, 35, 4, 13, 9, 9, 4, 4, 49, 143, 138, 40, 7, 127, 127, 127, 4, 38, 16, 16, 6, 127, 44, 45, 89, 90, 111, 112, 90, 80, 90, 91, 22, 22, 11, 16, 4, 22, 22, 22, 52, 53, 5, 21, 5, 66, 17, 5, 128, 124, 124], 
+	[145, 124, 124, 134, 1, 1, 1, 1, 1, 1, 6, 6, 1, 1, 1, 1, 136, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 121, 122, 122, 122, 122, 122, 130, 33, 127, 35, 17, 16, 13, 4, 22, 22, 127, 13, 39, 127, 143, 38, 137, 7, 17, 127, 18, 43, 127, 127, 127, 11, 11, 11, 4, 22, 22, 11, 11, 14, 14, 11, 11, 22, 15, 22, 22, 5, 5, 5, 5, 42, 43, 5, 5, 5, 5, 5, 18, 5, 128, 124, 124], 
+	[145, 124, 124, 124, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 134, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124], 
+	[145, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124],
+	[145, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124],
 ];
 
 var mapArea2 =
@@ -303,13 +351,17 @@ var updateInterval;
 
 function update()
 {
-	render();
+	if (mainMenuOpen || optMenuOpen)
+		renderMenu();
 	
-	if (!mainMenuOpen) {
-		movePlayer();
-		animate();
-		checkCollision();
-		objectMovement();
+	else {
+		if (!pauseMenuOpen) {
+			render();
+			movePlayer();
+			animate();
+			checkCollision();
+			objectMovement();
+		}
 	}
 }
 
@@ -319,7 +371,12 @@ function createMap()
 	{
 		images[i] = new Image();
 		images[i].src = "img/"+imgStr[i]+".png";
-	}	
+	}
+	for(var i = 0; i < imgStr1.length; i++)
+	{
+		images1[i] = new Image();
+		images1[i].src = "img/Zone1/"+imgStr1[i]+".png";
+	}		
 	for (var row = 0; row < ROWS; row++)
 	{	
 		for (var col = 0; col < COLS; col++)
@@ -361,14 +418,31 @@ function createMap()
 			var tile = {};
 			tile.x = 64*col;
 			tile.y = 64*row;
-			tile.img = images[mapArea1[row][col]];
-			if (mapArea1[row][col] == 16 || mapArea1[row][col] == 17 || mapArea1[row][col] == 18 || mapArea1[row][col] == 19 ||
-				mapArea1[row][col] == 20 || mapArea1[row][col] == 21 || mapArea1[row][col] == 22 || mapArea1[row][col] == 23 || 
-				mapArea1[row][col] == 24 || mapArea1[row][col] == 25 || mapArea1[row][col] == 26 || mapArea1[row][col] == 27 ||
-				mapArea1[row][col] == 28 || mapArea1[row][col] == 29 || mapArea1[row][col] == 30 || mapArea1[row][col] == 31 || 
-				mapArea1[row][col] == 32 || mapArea1[row][col] == 33 || mapArea1[row][col] == 34 || mapArea1[row][col] == 35 ||
-				mapArea1[row][col] == 36 || mapArea1[row][col] == 37 || mapArea1[row][col] == 57 || mapArea1[row][col] == 58 ||
-				mapArea1[row][col] == 59 || mapArea1[row][col] == 60 || mapArea1[row][col] == 61 || mapArea1[row][col] == 62) 
+			tile.img = images1[mapArea1[row][col]];
+			if (mapArea1[row][col] == 41 || mapArea1[row][col] == 44 || mapArea1[row][col] == 45 || mapArea1[row][col] == 46 ||
+				mapArea1[row][col] == 47 || mapArea1[row][col] == 48 || mapArea1[row][col] == 49 || mapArea1[row][col] == 52 || 
+				mapArea1[row][col] == 53 || mapArea1[row][col] == 57 || mapArea1[row][col] == 58 || mapArea1[row][col] == 59 ||
+				mapArea1[row][col] == 60 || mapArea1[row][col] == 61 || mapArea1[row][col] == 62 || mapArea1[row][col] == 63 || 
+				mapArea1[row][col] == 64 || mapArea1[row][col] == 65 || mapArea1[row][col] == 67 || mapArea1[row][col] == 68 ||
+				mapArea1[row][col] == 69 || mapArea1[row][col] == 70 || mapArea1[row][col] == 71 || mapArea1[row][col] == 72 ||
+				mapArea1[row][col] == 73 || mapArea1[row][col] == 74 || mapArea1[row][col] == 75 || mapArea1[row][col] == 76 ||
+				mapArea1[row][col] == 77 || mapArea1[row][col] == 78 || mapArea1[row][col] == 79 || mapArea1[row][col] == 80 || 
+				mapArea1[row][col] == 81 || mapArea1[row][col] == 82 || mapArea1[row][col] == 83 || mapArea1[row][col] == 84 ||
+				mapArea1[row][col] == 85 || mapArea1[row][col] == 86 || mapArea1[row][col] == 87 || mapArea1[row][col] == 88 || 
+				mapArea1[row][col] == 89 || mapArea1[row][col] == 90 || mapArea1[row][col] == 91 || mapArea1[row][col] == 92 ||
+				mapArea1[row][col] == 93 || mapArea1[row][col] == 94 || mapArea1[row][col] == 95 || mapArea1[row][col] == 96 ||
+				mapArea1[row][col] == 97 || mapArea1[row][col] == 98 || mapArea1[row][col] == 99 || mapArea1[row][col] == 100 || 
+				mapArea1[row][col] == 101 || mapArea1[row][col] == 102 || mapArea1[row][col] == 103 || mapArea1[row][col] == 104 ||
+				mapArea1[row][col] == 105 || mapArea1[row][col] == 106 || mapArea1[row][col] == 107 || mapArea1[row][col] == 108 || 
+				mapArea1[row][col] == 109 || mapArea1[row][col] == 110 || mapArea1[row][col] == 111 || mapArea1[row][col] == 112 ||
+				mapArea1[row][col] == 115 || mapArea1[row][col] == 116 || mapArea1[row][col] == 117 || mapArea1[row][col] == 118 ||
+				mapArea1[row][col] == 119 || mapArea1[row][col] == 120 || mapArea1[row][col] == 123 || mapArea1[row][col] == 124 || 
+				mapArea1[row][col] == 125 || mapArea1[row][col] == 126 || mapArea1[row][col] == 128 || mapArea1[row][col] == 131 ||
+				mapArea1[row][col] == 132 || mapArea1[row][col] == 133 || mapArea1[row][col] == 134 || mapArea1[row][col] == 135 || 
+				mapArea1[row][col] == 136 || mapArea1[row][col] == 137 || mapArea1[row][col] == 138 || mapArea1[row][col] == 139 ||
+				mapArea1[row][col] == 140 || mapArea1[row][col] == 141 || mapArea1[row][col] == 142 || mapArea1[row][col] == 143 ||
+				mapArea1[row][col] == 144 || mapArea1[row][col] == 145 || mapArea1[row][col] == 146 || mapArea1[row][col] == 147 ||
+				mapArea1[row][col] == 148 || mapArea1[row][col] == 149) 
 			{
 				mapCollidableArea1.push(tile);
 			}
@@ -528,15 +602,15 @@ function interactWith()
 					{
 						mapCollidable.push(tile);
 					}
-					if (map[row][col] == 67)
+					else if (map[row][col] == 67)
 					{
 						warpZone1.push(tile);
 					}
-					if (map[row][col] == 68)
+					else if (map[row][col] == 68)
 					{
 						warpZone2.push(tile);
 					}
-					if (map[row][col] == 38 || map[row][col] == 39 || map[row][col] == 40) 
+					else if (map[row][col] == 38 || map[row][col] == 39 || map[row][col] == 40) 
 					{
 						mapFarm.push(tile);
 					}
@@ -553,7 +627,12 @@ function interactWith()
 
 		else if (textBoxOpen == false) {
 			textBoxOpen = true
-			document.getElementById("textBox").innerHTML = "Tip: Use logs to build a bridge here. First you'll need an axe!";
+			if (lang == "EN") 
+				document.getElementById("textBox").innerHTML = "Tip: Use logs to build a bridge here. First you'll need an axe!";
+			
+			else if (lang == "FR") 
+				document.getElementById("textBox").innerHTML = "Conseil: Utilisez les journaux pour construire un pont ici. D'abord, vous aurez besoin d'une hache!";
+
 			document.getElementById("textBox").style.visibility = "visible";
 			console.log("interact");
 		}
@@ -678,7 +757,7 @@ function checkCollision()
 	{
 		for (var ctr = 0; ctr < mapCollidableArea1.length; ctr++) 
 		{
-			if (player.x + player.xSize > mapCollidableArea1[ctr].x && player.x < mapCollidableArea1[ctr].x + 64 && player.y + player.ySize > mapCollidableArea1[ctr].y && player.y < mapCollidableArea1[ctr].y + 64) 
+			if (player.x + player.xSize -8 > mapCollidableArea1[ctr].x && player.x < mapCollidableArea1[ctr].x + 56 && player.y + player.ySize > mapCollidableArea1[ctr].y && player.y < mapCollidableArea1[ctr].y + 32) 
 			{
 				player.x = oldPosition.x;
 				player.y = oldPosition.y;
@@ -721,13 +800,13 @@ function checkCollision()
 			if (area == 1)
 			{
 				area = 0;
-				player.x = 1544;
+				player.x = 1484;
 				player.y = 32;
 			}
 			if (area == 2)
 			{
 				area = 0;
-				player.x = 1544;
+				player.x = 1484;
 				player.y = 2880;
 			}
 		}
@@ -855,6 +934,67 @@ function openCraftMenu() {
 	}
 }
 
+function openPauseMenu() {
+	if (!mainMenuOpen) {
+		pauseMenuOpen = !pauseMenuOpen;
+
+		if (pauseMenuOpen)  {
+			elemPause.style.visibility = "visible";
+			canvasPause.font = "bold 36px Arial";
+			canvasPause.textAlign = "center";
+			canvasPause.fillStyle = "black";
+			
+			canvasPause.fillText("PAUSED", (elemPause.width/2), 40);
+
+			btnSave.x = (elemPause.width/2) - 96;
+			btnSave.y = (elemPause.height/2) - 128;
+			btnLoad.x = (elemPause.width/2) - 96;
+			btnLoad.y = (elemPause.height/2) - 32;
+			btnExit.x = (elemPause.width/2) - 96;
+			btnExit.y = (elemPause.height/2) + 64;
+			
+			canvasPause.drawImage(btnSave.image, btnSave.x, btnSave.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnLoad.image, btnLoad.x, btnLoad.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnExit.image, btnExit.x, btnExit.y, btnWidth, btnHeight);
+		
+			canvasPause.fillText("SAVE", btnSave.x + (btnWidth / 2), btnSave.y + 45);
+			canvasPause.fillText("LOAD", btnLoad.x + (btnWidth / 2), btnLoad.y + 45);
+			canvasPause.fillText("EXIT", btnExit.x + (btnWidth / 2), btnExit.y + 45);
+		}
+		
+		else {
+			elemPause.style.visibility = "hidden";
+		}
+		
+	}
+}
+
+function openRestartMenu() {
+	
+	restartMenuOpen = true;
+	elemRestart.style.visibility = "visible";
+	canvasRestart.textAlign = "center";
+	canvasRestart.fillStyle = "black";
+	
+	if (lang == "EN") {		
+		canvasRestart.drawImage(btnYes.image, btnYes.x, btnYes.y, btnWidth, btnHeight);
+		canvasRestart.drawImage(btnNo.image, btnNo.x, btnNo.y, btnWidth, btnHeight);
+		
+		canvasRestart.font = "bold 30px Arial";
+		canvasRestart.fillText("You Died!!! ", (elemRestart.width/2), 40);
+		canvasRestart.fillText("Would You Like To Restart?", (elemRestart.width/2), 68);
+		
+		canvasRestart.font = "bold 36px Arial";
+		canvasRestart.fillText("YES", btnYes.x + (btnWidth / 2), btnYes.y + 45);
+		canvasRestart.fillText("NO", btnNo.x + (btnWidth / 2), btnNo.y + 45);
+		
+	}
+	else if (lang == "FR")
+		document.getElementById("endGame").innerHTML = "Tu es mort...";
+	
+	document.getElementById("endGame").style.visibility = "visible";
+}
+
 function clickItem(event) {
 	
 	var mousePos = { 
@@ -962,10 +1102,13 @@ function onKeyDown(event)
 		case 32: // Space Bar
 			meleeAttack();
 			break;
-		case 80:
-			if(player.speed < 5)
-				player.speed = 5;
-			else
+		case 81: // Q
+			openPauseMenu();
+			break;
+		case 80: // P
+			if(player.speed < 3)
+				player.speed = 3;
+			else 
 				player.speed = 1;
 			break;
 	}
@@ -1027,144 +1170,135 @@ function playerDead() {
 	aud_Music.pause();
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
-	document.getElementById("endGame").style.color = "red";
-	document.getElementById("endGame").innerHTML = "You Died...";
-	document.getElementById("endGame").style.visibility = "visible";
-	setInterval(restartGameTimer,1000);
-}
-
-function restartGameTimer()
-{
-	restartTime--;
-	document.getElementById("endGame").innerHTML = "Restaring In " + restartTime;
-	if (restartTime <= 0)
-		location.reload();
+	openRestartMenu();
 }
 
 function endGameTimer() 
 {
-	var timeMinutes = Math.floor((endTime - currentTime)/60);
-	var timeSeconds = (endTime - currentTime) - timeMinutes * 60;
-	
-	if (currentTime <= endTime) 
-	{
-		document.getElementById("timer").innerHTML = "Time Left: " + timeMinutes + " : " + timeSeconds;
-		currentTime++;
-	}
-	else if (currentTime > endTime) 
-		gameOver();	
+	if (!pauseMenuOpen) {
+		var timeMinutes = Math.floor((endTime - currentTime)/60);
+		var timeSeconds = (endTime - currentTime) - timeMinutes * 60;
+		
+		if (currentTime <= endTime) 
+		{
+			if (lang == "EN")
+				document.getElementById("timer").innerHTML = "Time Left: " + timeMinutes + " : " + timeSeconds;
+			else if (lang == "FR")
+				document.getElementById("timer").innerHTML = "Temps Restant: " + timeMinutes + " : " + timeSeconds;
+			
+			currentTime++;
+		}
+		else if (currentTime > endTime) 
+			gameOver();
+	}	
 }
 
 function gameOver() 
 {
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
-	setInterval(restartGameTimer,1000);
 	aud_Music.pause();	
 	
 	if (enemy.dead == true) {
 		aud_Win.play();
-		document.getElementById("endGame").innerHTML = "You Defeated The Enemy! You Win!";
+		if (lang == "EN")
+			document.getElementById("endGame").innerHTML = "You Defeated The Enemy! You Win!";
+		else if (lang == "FR")
+			document.getElementById("endGame").innerHTML = "Vous avez Construit le Pont! Vous Gagnez!";
+		
 		document.getElementById("endGame").style.visibility = "visible";
 	}
 	else {
 		aud_Monster.pause();
 		aud_Lose.play();
-		document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
+		if (lang == "EN")
+			document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
+		else if (lang == "FR")
+			document.getElementById("endGame").innerHTML = "Jeu Terminé! Tu as Perdu!";
+		
 		document.getElementById("endGame").style.visibility = "visible";
 	}
 }
 
 function render() 
 {
-	if (mainMenuOpen) {
-		surface.clearRect(0,0,canvas.width,canvas.height);
-		surface.setTransform(1,0,0,1,0,0);
+	surface.clearRect(0,0,mapSizeX,mapSizeY);
+	canvasCraft.clearRect(0,0, elemCraft.width, elemCraft.height);
+	canvasInventory.clearRect(0,0, elemInventory.width, elemInventory.height);
+	canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+	
+	surface.setTransform(1,0,0,1,0,0);
+	surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.height/2-24);
+
+	if (area == 0) {
+		for (var row = 0; row < ROWS; row++) {
+			for ( var col = 0; col < COLS; col++)
+				surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
+		}
 		
-		surface.drawImage(imgBackground.image, 0, 0, 800, 600);
-		surface.drawImage(btnPlay.image, btnPlay.x, btnPlay.y, 192, 64);
-		surface.drawImage(btnLoad.image, btnLoad.x, btnLoad.y, 192, 64);
-		surface.drawImage(btnOptions.image, btnOptions.x, btnOptions.y, 192, 64);
-		surface.drawImage(btnExit.image, btnExit.x, btnExit.y, 192, 64)
+		surface.drawImage(sign.image, sign.x, sign.y);
+	}
+
+	else if (area == 1) {
+		for (var row = 0; row < ROWSAREA1; row++) {
+			for ( var col = 0; col < COLSAREA1; col++)
+				surface.drawImage(mapArea1[row][col].img,mapArea1[row][col].x,mapArea1[row][col].y, 64, 64);
+		}
+		
+		if (!stickPickup.used)
+			surface.drawImage(stickPickup.image, stickPickup.x, stickPickup.y);
 	}
 	
-	else {
-		surface.clearRect(0,0,mapSizeX,mapSizeY);
-		canvasCraft.clearRect(0,0, elemCraft.width, elemCraft.height);
-		canvasInventory.clearRect(0,0, elemInventory.width, elemInventory.height);
-		canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+	else if (area == 2) {
+		for (var row = 0; row < ROWSAREA2; row++) {
+			for ( var col = 0; col < COLSAREA2; col++)
+				surface.drawImage(mapArea2[row][col].img,mapArea2[row][col].x,mapArea2[row][col].y, 64, 64);
+		}
 		
-		surface.setTransform(1,0,0,1,0,0);
-		surface.translate(-player.x + canvas.width/2-24, -player.y + canvas.height/2-24);
-
-		if (area == 0) {
-			for (var row = 0; row < ROWS; row++) {
-				for ( var col = 0; col < COLS; col++)
-					surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
-			}
-		}
-
-		if (area == 1) {
-			for (var row = 0; row < ROWSAREA1; row++) {
-				for ( var col = 0; col < COLSAREA1; col++)
-					surface.drawImage(mapArea1[row][col].img,mapArea1[row][col].x,mapArea1[row][col].y, 64, 64);
-			}
-		}
-
-		if (area == 2) {
-			for (var row = 0; row < ROWSAREA2; row++) {
-				for ( var col = 0; col < COLSAREA2; col++)
-					surface.drawImage(mapArea2[row][col].img,mapArea2[row][col].x,mapArea2[row][col].y, 64, 64);
-			}
-		}
-
-		for (var ctr = 0; ctr < inventory.length; ctr++) {
-			inventory[ctr].x = ctr * 64;
-			inventory[ctr].y = 0;
-			canvasInventory.drawImage(inventory[ctr].image, inventory[ctr].x, inventory[ctr].y, 64, 64);
-		}
-			
-		if (craftInvOpen) {
-			canvasCraft.drawImage(crftPlus.image, 64, 0, 64, 64);
-			canvasCraft.drawImage(crftEqual.image, 192, 0, 64, 64);
-		}
-			
-		for (var ctr = 0; ctr < craftInv.length; ctr++) {
-			craftInv[ctr].x = ctr * 128;
-			craftInv[ctr].y = 0;
-			canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
-		}
-					
-		if (!inventory.includes(foodPickup) || craftInv.includes(foodPickup))
-			surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
-			
-		if (!tree.used)
-			surface.drawImage(tree.image, tree.x, tree.y);
-
-		if (area == 0)
-			surface.drawImage(sign.image, sign.x, sign.y);
-
-		if (!stickPickup.used && area == 1)
-			surface.drawImage(stickPickup.image, stickPickup.x, stickPickup.y);
-
-		if (!rockPickup.used && area == 2)
+		if (!rockPickup.used)
 			surface.drawImage(rockPickup.image, rockPickup.x, rockPickup.y);
-			
-		surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
-		if (!enemy.dead == true)
-			surface.drawImage(enemy.image, enemy.x, enemy.y);
-
-		if (weapon.attack == true) {
-			if (player.dir == 0 || player.dir == 2)
-				surface.drawImage(weapon.image, weapon.frame*128, weapon.vert*64, 128, 64, player.x + weapon.dirX, player.y + weapon.dirY, 128, 64)
-			if (player.dir == 1 || player.dir == 3)
-				surface.drawImage(weapon.image, weapon.hor*64, weapon.frame*128, 64, 128, player.x + weapon.dirX, player.y + weapon.dirY, 64, 128)
-		}
-
-		if (boomerang.thrown == true)
-			surface.drawImage(boomerang.image, boomerang.frame*68, 0, 68, 68, boomerang.x, boomerang.y, boomerang.size, boomerang.size);
-
-		for (var ctr = 0; ctr < playerHealth; ctr++)
-			canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);
 	}
+
+	for (var ctr = 0; ctr < inventory.length; ctr++) {
+		inventory[ctr].x = ctr * 64;
+		inventory[ctr].y = 0;
+		canvasInventory.drawImage(inventory[ctr].image, inventory[ctr].x, inventory[ctr].y, 64, 64);
+	}
+			
+	if (craftInvOpen) {
+		canvasCraft.drawImage(crftPlus.image, 64, 0, 64, 64);
+		canvasCraft.drawImage(crftEqual.image, 192, 0, 64, 64);
+	}
+		
+	for (var ctr = 0; ctr < craftInv.length; ctr++) {
+		craftInv[ctr].x = ctr * 128;
+		craftInv[ctr].y = 0;
+		canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
+	}
+				
+	if (!inventory.includes(foodPickup) || craftInv.includes(foodPickup))
+		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
+		
+	if (!tree.used)
+		surface.drawImage(tree.image, tree.x, tree.y);
+
+	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
+	
+	if (boomerang.thrown == true)
+		surface.drawImage(boomerang.image, boomerang.frame*68, 0, 68, 68, boomerang.x, boomerang.y, boomerang.size, boomerang.size);
+
+	if (!enemy.dead == true)
+		surface.drawImage(enemy.image, enemy.x, enemy.y);
+
+	if (weapon.attack == true) {
+		if (player.dir == 0 || player.dir == 2)
+			surface.drawImage(weapon.image, weapon.frame*128, weapon.vert*64, 128, 64, player.x + weapon.dirX, player.y + weapon.dirY, 128, 64)
+		
+		else if (player.dir == 1 || player.dir == 3)
+			surface.drawImage(weapon.image, weapon.hor*64, weapon.frame*128, 64, 128, player.x + weapon.dirX, player.y + weapon.dirY, 64, 128)
+	}
+	
+	for (var ctr = 0; ctr < playerHealth; ctr++)
+		canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);
+	
 }
