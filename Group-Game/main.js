@@ -222,17 +222,25 @@ function startGame() {
 }
 
 function updateSFX() {
-	aud_Death.volume = 0.5 * volSFX;
-	aud_Monster.volume = 0.5 * volSFX;
+	sfx_Death.volume = 0.5 * volSFX;
+	sfx_Enemy_Mushroom.volume = 0.5 * volSFX;
+	sfx_Boomerang.volume = 0.5 * volSFX;
+	sfx_Swing_1.volume = 0.5 * volSFX;
+	sfx_Swing_2.volume = 0.5 * volSFX;
+	sfx_Swing_3.volume = 0.5 * volSFX;
+	sfx_Swing_Hit.volume = 0.5 * volSFX;
+	sfx_Hurt.volume = 0.5 * volSFX;
+	sfx_Eat.volume = 0.5 * volSFX;
+	sfx_Craft.volume = 0.5 * volSFX;
 	
-	aud_Death.play();
+	sfx_Hurt.play();
 }
 
 function updateMusic() {
-	aud_Music.volume = 0.25 * volMusic;
-	aud_Win.volume = 0.25 * volMusic;
-	aud_Lose.volume = 0.25 * volMusic;
-	
+	mus_Game.volume = 0.25 * volMusic;
+	mus_Win.volume = 0.25 * volMusic;
+	mus_Lose.volume = 0.25 * volMusic;
+	mus_Menu.volume = 0.25 * volMusic;
 	
 }
 

@@ -105,24 +105,9 @@ var warpZone0 = [];
 var warpZone1 = [];
 var warpZone2 = [];
 
-var aud_Music = new Audio ("audio/mus_Main.mp3");
-aud_Music.loop = true;
-aud_Music.volume = 0.25;
-	
-var aud_Death = new Audio ("audio/snd_Death.wav");
-aud_Death.volume = 0.5;
-
-var aud_Monster = new Audio("audio/snd_Monster.wav");
-aud_Monster.loop = true;
-aud_Monster.volume = 0.5;
-
-var aud_Win = new Audio ("audio/mus_Win.wav");
-aud_Win.volume = 0.5;
-
-var aud_Lose = new Audio("audio/mus_Lose.wav");
-aud_Lose.volume = 0.5;
-
 var textBoxOpen = false;
+	
+var rndNum;	
 	
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
@@ -344,17 +329,23 @@ canvas.addEventListener("mousedown", boomerangAttack);
 
 createMap();
 
-aud_Music.play();
+
 
 var fps = 60;
 var updateInterval;
 
 function update()
 {
-	if (mainMenuOpen || optMenuOpen)
+	if (mainMenuOpen || optMenuOpen) {
+		mus_Menu.play();
+		mus_Game.pause();
+		
 		renderMenu();
-	
+	}
 	else {
+		mus_Menu.pause();
+		mus_Game.play();
+		
 		if (!pauseMenuOpen) {
 			render();
 			movePlayer();
@@ -570,6 +561,18 @@ function meleeAttack()
 			weapon.dirX = -48;
 			weapon.dirY = -24; 
 		}	
+		
+		rndNum = Math.floor((Math.random() * 3) + 1);
+		
+		if (rndNum == 1) 
+			sfx_Swing_1.play();
+		
+		else if (rndNum == 2)
+			sfx_Swing_2.play();
+		
+		else if (rndNum == 3)
+			sfx_Swing_3.play();
+		
 		weapon.attack = true;
 		console.log("attack");
 	}	
@@ -654,12 +657,12 @@ function objectMovement()
 	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);	
 	if (enemy.distance < 500 && enemy.stun == false && enemy.dead == false)
 	{
-		aud_Monster.play();
+		sfx_Enemy_Mushroom.play();
 		enemy.x += enemy.speedX;
 		enemy.y += enemy.speedY;
 	}
 	else {
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 	}
 
 	if (boomerang.timeThrown > .2)
@@ -673,6 +676,7 @@ function objectMovement()
 	}
 	if (boomerang.thrown == true)
 	{
+		sfx_Boomerang.play();
 		boomerang.x += boomerang.speedX;
 		boomerang.y += boomerang.speedY;
 	}
@@ -724,6 +728,7 @@ function checkCollision()
 	
 	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50 && enemy.dead == false)
 	{	
+		sfx_Hurt.play();
 		playerHealth--;
 		player.x += enemy.speedX*200;
 		player.y += enemy.speedY*200;
@@ -840,6 +845,7 @@ function checkCollision()
 	
 	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
 	{
+		sfx_Boomerang.pause();
 		boomerang.thrown = false;
 		clearInterval(boomerangTime);
 		boomerang.timeThrown = 0;
@@ -848,7 +854,7 @@ function checkCollision()
 
 	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 		boomerang.timeThrown = 1;
 		enemy.stun = true;
 		timeStunned = setInterval(stunTimer, 1000);
@@ -857,7 +863,8 @@ function checkCollision()
 
 	if (player.x + weapon.dirX + weapon.xSize > enemy.x + 20 && player.x + weapon.dirX < enemy.x + 28 && player.y + weapon.dirY + weapon.ySize > enemy.y + 28 && player.y + weapon.dirY < enemy.y + 50 && weapon.attack == true)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
+		sfx_Swing_Hit.play();
 		enemy.dead = true;
 		console.log("Weapon Hit Enemy");
 	}
@@ -866,6 +873,7 @@ function checkCollision()
 	{
 		if (!tree.used) 
 		{
+			sfx_Swing_Hit.play();
 			inventory.push(logPickup);
 			tree.used = true;
 		}
@@ -1024,6 +1032,7 @@ function clickItem(event) {
 			if (inventory.length >= 1) {
 				if (isIntersect(mousePos, {offsetLeft: inventory[inventory.indexOf(foodPickup)].x, offsetTop: inventory[inventory.indexOf(foodPickup)].y, width: inventory[inventory.indexOf(foodPickup)].width, height: inventory[inventory.indexOf(foodPickup)].height})) {
 					if (playerHealth < 3) {
+						sfx_Eat.play();
 						playerHealth++;
 						inventory.splice(inventory.indexOf(foodPickup), 1);
 					}
@@ -1066,6 +1075,7 @@ function isIntersect(point, elem) {
 
 function craftItem(item1, item2) {
 	if (item1 == stickPickup && item2 == rockPickup) {
+		sfx_Craft.play();
 		craftInv.push(axePickup);
 	}
 	
@@ -1164,10 +1174,10 @@ function movePlayer()
 }
 
 function playerDead() {
-	aud_Monster.pause();
-	aud_Death.play();
-	aud_Monster.loop = false;
-	aud_Music.pause();
+	sfx_Enemy_Mushroom.pause();
+	sfx_Death.play();
+	sfx_Enemy_Mushroom.loop = false;
+	mus_Game.pause();
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
 	openRestartMenu();
@@ -1197,10 +1207,10 @@ function gameOver()
 {
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
-	aud_Music.pause();	
+	mus_Game.pause();	
 	
 	if (enemy.dead == true) {
-		aud_Win.play();
+		mus_Win.play();
 		if (lang == "EN")
 			document.getElementById("endGame").innerHTML = "You Defeated The Enemy! You Win!";
 		else if (lang == "FR")
@@ -1209,8 +1219,8 @@ function gameOver()
 		document.getElementById("endGame").style.visibility = "visible";
 	}
 	else {
-		aud_Monster.pause();
-		aud_Lose.play();
+		sfx_Enemy_Mushroom.pause();
+		mus_Lose.play();
 		if (lang == "EN")
 			document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
 		else if (lang == "FR")
