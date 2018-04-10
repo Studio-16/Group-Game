@@ -63,11 +63,35 @@ var rockPickup = {x:456, y:768, width:64, height:64, used:false}
 rockPickup.image = new Image();
 rockPickup.image.src = "img/rock.png";
 
+var flintPickup = {x:456, y:128, width:64, height:64, used:false}
+flintPickup.image = new Image();
+flintPickup.image.src = "img/flint.png";
+
+var rodPickup = {x:0, y:0, width:64, height:64, used:false}
+rodPickup.image = new Image();
+rodPickup.image.src = "img/rod.png";
+
+var vinePickup = {x:500, y:1000, width:64, height:64, used:false}
+vinePickup.image = new Image();
+vinePickup.image.src = "img/vine.png";
+
+var cookedPickup = {x:0, y:0, width:64, height:64, used:false}
+cookedPickup.image = new Image();
+cookedPickup.image.src = "img/cooked.png";
+
+var firePickup = {x:0, y:0, width:64, height:64, used:false}
+firePickup.image = new Image();
+firePickup.image.src = "img/fire.png";
+
+var hidePickup = {x:1860, y:1100, width:64, height:64, used:false}
+hidePickup.image = new Image();
+hidePickup.image.src = "img/hide.png";
+
 var axePickup = {x:0, y:0, width:64, height:64, used:false}
 axePickup.image = new Image();
 axePickup.image.src = "img/axe.png";
 
-var logPickup = {x:0, y:0, width:64, height:64, used:false}
+var logPickup = {x:4000, y:1000, width:64, height:64, used:false}
 logPickup.image = new Image();
 logPickup.image.src = "img/logs.png"
 
