@@ -31,7 +31,7 @@ enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 var enemyOldPosition = {x:enemy.x, y:enemy.y};
 
-var enemyStump = {speed:.5, x:2184, y:1146, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:2, currentFrame:0, maxFrames:60, stun:false, dead:false, stunTime:0, idle:true, oldPosX:0, oldPosY:0, size:32}
+var enemyStump = {speed:.5, x:3605, y:2098, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:2, currentFrame:0, maxFrames:60, stun:false, dead:false, stunTime:0, idle:true, oldPosX:0, oldPosY:0, size:32}
 enemyStump.image = new Image();
 enemyStump.image.src = "img/enemyStump.png";
 
