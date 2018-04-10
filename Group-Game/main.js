@@ -10,15 +10,15 @@ var btnPlay = {x: 175, y: 250}
 btnPlay.image = new Image();
 btnPlay.image.src = "img/btnBlank.png";
 
-var btnLoad = {x: (canvas.width - 192 - btnPlay.x), y: btnPlay.y}
-btnLoad.image = new Image();
-btnLoad.image.src = "img/btnBlank.png";
+var btnHow = {x: (canvas.width - 192 - btnPlay.x), y: btnPlay.y}
+btnHow.image = new Image();
+btnHow.image.src = "img/btnBlank.png";
 
 var btnSave = {x: (canvas.width - 192 - btnPlay.x), y: btnPlay.y}
 btnSave.image = new Image();
 btnSave.image.src = "img/btnBlank.png";
 
-var btnExit = {x: btnLoad.x, y: (canvas.height + 16 - btnPlay.y)}
+var btnExit = {x: btnHow.x, y: (canvas.height + 16 - btnPlay.y)}
 btnExit.image = new Image();
 btnExit.image.src = "img/btnBlank.png";
 
@@ -103,7 +103,7 @@ function clickBtn(event) {
 			startGame();
 		}
 		
-		else if (isIntersectMenu(mousePos, btnLoad)) {
+		else if (isIntersectMenu(mousePos, btnHow)) {
 			
 		}
 		
@@ -180,9 +180,8 @@ function clickBtn(event) {
 				saveGame("username", user, 30);
 		}
 		
-		else if (isIntersectMenu(mousePos, btnLoad)) {
-			var test = loadGame("username");
-			alert(test);
+		else if (isIntersectMenu(mousePos, btnHow)) {
+			
 		}
 		
 		else if (isIntersectMenu(mousePos, btnExit))
@@ -255,20 +254,24 @@ function renderMenu () {
 		
 		surface.drawImage(imgBackground.image, 0, 0, 800, 600);
 		surface.drawImage(btnPlay.image, btnPlay.x, btnPlay.y, btnWidth, btnHeight);
-		surface.drawImage(btnLoad.image, btnLoad.x, btnLoad.y, btnWidth, btnHeight);
+		surface.drawImage(btnHow.image, btnHow.x, btnHow.y, btnWidth, btnHeight);
 		surface.drawImage(btnOptions.image, btnOptions.x, btnOptions.y, btnWidth, btnHeight);
 		surface.drawImage(btnExit.image, btnExit.x, btnExit.y, btnWidth, btnHeight)
 		
 		if (lang == "EN") {
 			surface.fillText("PLAY", btnPlay.x + (btnWidth / 2), btnPlay.y + 45);
-			surface.fillText("LOAD", btnLoad.x + (btnWidth / 2), btnLoad.y + 45);
+			//surface.font = "bold 26px Arial";
+			surface.fillText("CONTROLS", btnHow.x + (btnWidth / 2), btnHow.y + 45);
+			surface.font = "bold 36px Arial";
 			surface.fillText("OPTIONS", btnOptions.x + (btnWidth / 2), btnOptions.y + 45);
 			surface.fillText("EXIT", btnExit.x + (btnWidth / 2), btnExit.y + 45);
 		}
 		
 		else if (lang == "FR") {
 			surface.fillText("JOUER", btnPlay.x + (btnWidth / 2), btnPlay.y + 45);
-			surface.fillText("CHARGER", btnLoad.x + (btnWidth / 2), btnLoad.y + 45);
+			surface.font = "bold 20px Arial";
+			surface.fillText("COMMENT JOUER", btnHow.x + (btnWidth / 2), btnHow.y + 45);
+			surface.font = "bold 36px Arial";
 			surface.fillText("OPTIONS", btnOptions.x + (btnWidth / 2), btnOptions.y + 45);
 			surface.fillText("SORTIR", btnExit.x + (btnWidth / 2), btnExit.y + 45);
 		}
