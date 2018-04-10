@@ -10,6 +10,8 @@ var craftInvOpen = false;
 
 var elemHealth = document.getElementById("health");
 var canvasHealth = elemHealth.getContext('2d');
+elemHealth.style.left = "-450px";
+elemHealth.style.top = "25px";
 
 var elemRestart = document.getElementById("restart");
 var canvasRestart = elemRestart.getContext('2d');
@@ -329,14 +331,12 @@ canvas.addEventListener("mousedown", boomerangAttack);
 
 createMap();
 
-
-
 var fps = 60;
 var updateInterval;
 
 function update()
 {
-	if (mainMenuOpen || optMenuOpen) {
+if (mainMenuOpen || optMenuOpen || controlsMenuOpen) {
 		mus_Menu.play();
 		mus_Game.pause();
 		
@@ -952,22 +952,34 @@ function openPauseMenu() {
 			canvasPause.textAlign = "center";
 			canvasPause.fillStyle = "black";
 			
+			if (lang == "EN") {	
 			canvasPause.fillText("PAUSED", (elemPause.width/2), 40);
-
-			btnSave.x = (elemPause.width/2) - 96;
-			btnSave.y = (elemPause.height/2) - 128;
-			btnLoad.x = (elemPause.width/2) - 96;
-			btnLoad.y = (elemPause.height/2) - 32;
-			btnExit.x = (elemPause.width/2) - 96;
-			btnExit.y = (elemPause.height/2) + 64;
 			
-			canvasPause.drawImage(btnSave.image, btnSave.x, btnSave.y, btnWidth, btnHeight);
-			canvasPause.drawImage(btnLoad.image, btnLoad.x, btnLoad.y, btnWidth, btnHeight);
-			canvasPause.drawImage(btnExit.image, btnExit.x, btnExit.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseOptions.image, btnPauseOptions.x, btnPauseOptions.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseControls.image, btnPauseControls.x, btnPauseControls.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseExit.image, btnPauseExit.x, btnPauseExit.y, btnWidth, btnHeight);
 		
-			canvasPause.fillText("SAVE", btnSave.x + (btnWidth / 2), btnSave.y + 45);
-			canvasPause.fillText("LOAD", btnLoad.x + (btnWidth / 2), btnLoad.y + 45);
-			canvasPause.fillText("EXIT", btnExit.x + (btnWidth / 2), btnExit.y + 45);
+			canvasPause.fillText("OPTIONS", btnPauseOptions.x + (btnWidth / 2), btnPauseOptions.y + 45);
+			canvasPause.fillText("EXIT", btnPauseExit.x + (btnWidth / 2), btnPauseExit.y + 45);
+			
+			canvasPause.font = "bold 32px Arial";
+			canvasPause.fillText("CONTROLS", btnPauseControls.x + (btnWidth / 2), btnPauseControls.y + 45);
+			}
+			
+			else if (lang == "FR") {	
+			canvasPause.fillText("PAUSED", (elemPause.width/2), 40);
+			
+			canvasPause.drawImage(btnPauseOptions.image, btnPauseOptions.x, btnPauseOptions.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseControls.image, btnPauseControls.x, btnPauseControls.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseExit.image, btnPauseExit.x, btnPauseExit.y, btnWidth, btnHeight);
+		
+			canvasPause.fillText("OPTIONS", btnPauseOptions.x + (btnWidth / 2), btnPauseOptions.y + 45);
+			canvasPause.fillText("SORTIR", btnPauseExit.x + (btnWidth / 2), btnPauseExit.y + 45);
+			
+			canvasPause.font = "bold 28px Arial";
+			canvasPause.fillText("CONTRÔLES", btnPauseControls.x + (btnWidth / 2), btnPauseControls.y + 45);
+			
+			}
 		}
 		
 		else {
@@ -984,10 +996,10 @@ function openRestartMenu() {
 	canvasRestart.textAlign = "center";
 	canvasRestart.fillStyle = "black";
 	
+	canvasRestart.drawImage(btnYes.image, btnYes.x, btnYes.y, btnWidth, btnHeight);
+	canvasRestart.drawImage(btnNo.image, btnNo.x, btnNo.y, btnWidth, btnHeight);
+	
 	if (lang == "EN") {		
-		canvasRestart.drawImage(btnYes.image, btnYes.x, btnYes.y, btnWidth, btnHeight);
-		canvasRestart.drawImage(btnNo.image, btnNo.x, btnNo.y, btnWidth, btnHeight);
-		
 		canvasRestart.font = "bold 30px Arial";
 		canvasRestart.fillText("You Died!!! ", (elemRestart.width/2), 40);
 		canvasRestart.fillText("Would You Like To Restart?", (elemRestart.width/2), 68);
@@ -997,8 +1009,15 @@ function openRestartMenu() {
 		canvasRestart.fillText("NO", btnNo.x + (btnWidth / 2), btnNo.y + 45);
 		
 	}
-	else if (lang == "FR")
-		document.getElementById("endGame").innerHTML = "Tu es mort...";
+	else if (lang == "FR") {
+		canvasRestart.font = "bold 30px Arial";
+		canvasRestart.fillText("Tu es Mort!!! ", (elemRestart.width/2), 40);
+		canvasRestart.fillText("Voulez-vous Redémarrer?", (elemRestart.width/2), 68);
+		
+		canvasRestart.font = "bold 36px Arial";
+		canvasRestart.fillText("OUI", btnYes.x + (btnWidth / 2), btnYes.y + 45);
+		canvasRestart.fillText("NON", btnNo.x + (btnWidth / 2), btnNo.y + 45);
+	}
 	
 	document.getElementById("endGame").style.visibility = "visible";
 }
@@ -1077,6 +1096,41 @@ function craftItem(item1, item2) {
 	if (item1 == stickPickup && item2 == rockPickup) {
 		sfx_Craft.play();
 		craftInv.push(axePickup);
+	}
+	
+	else if (item1 == rockPickup && item2 == stickPickup) {
+		sfx_Craft.play();
+		craftInv.push(axePickup);
+	}
+	
+	else if (item1 == flintPickup && item2 == stickPickup) {
+		sfx_Craft.play();
+		craftInv.push(firePickup);
+	}
+	
+	else if (item1 == stickPickup && item2 == flintPickup) {
+		sfx_Craft.play();
+		craftInv.push(firePickup);
+	}
+	
+	else if (item1 == vinePickup && item2 == stickPickup) {
+		sfx_Craft.play();
+		craftInv.push(rodPickup);
+	}
+	
+	else if (item1 == stickPickup && item2 == vinePickup) {
+		sfx_Craft.play();
+		craftInv.push(rodPickup);
+	}
+	
+	else if (item1 == hidePickup && item2 == vinePickup) {
+		sfx_Craft.play();
+		craftInv.push(bootPickup);
+	}
+	
+	else if (item1 == vinePickup && item2 == hidePickup) {
+		sfx_Craft.play();
+		craftInv.push(bootPickup);
 	}
 	
 	else 
@@ -1202,7 +1256,6 @@ function endGameTimer()
 			gameOver();
 	}	
 }
-
 function gameOver() 
 {
 	clearInterval(updateInterval);
