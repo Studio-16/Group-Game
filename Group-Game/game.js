@@ -62,13 +62,37 @@ var rockPickup = {x:456, y:768, width:64, height:64, used:false}
 rockPickup.image = new Image();
 rockPickup.image.src = "img/rock.png";
 
+var flintPickup = {x:500, y:128, width:64, height:64, used:false}
+flintPickup.image = new Image();
+flintPickup.image.src = "img/flint.png";
+
+var rodPickup = {x:0, y:0, width:64, height:64, used:false}
+rodPickup.image = new Image();
+rodPickup.image.src = "img/rod.png";
+
+var vinePickup = {x:600, y:128, width:64, height:64, used:false}
+vinePickup.image = new Image();
+vinePickup.image.src = "img/vine.png";
+
+var cookedPickup = {x:0, y:0, width:64, height:64, used:false}
+cookedPickup.image = new Image();
+cookedPickup.image.src = "img/cooked.png";
+
+var firePickup = {x:0, y:0, width:64, height:64, used:false}
+firePickup.image = new Image();
+firePickup.image.src = "img/fire.png";
+
+var hidePickup = {x:1860, y:1100, width:64, height:64, used:false}
+hidePickup.image = new Image();
+hidePickup.image.src = "img/hide.png";
+
 var axePickup = {x:0, y:0, width:64, height:64, used:false}
 axePickup.image = new Image();
 axePickup.image.src = "img/axe.png";
 
 var logPickup = {x:0, y:0, width:64, height:64, used:false}
 logPickup.image = new Image();
-logPickup.image.src = "img/logs.png";
+logPickup.image.src = "img/logs.png"
 
 var crftPlus = {}
 crftPlus.image = new Image();
@@ -92,7 +116,7 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var endTime = 180;
+var endTime = 360;
 var currentTime = 0;
 var endTimer;
 
@@ -691,11 +715,19 @@ function checkCollision()
 				inventory.push(foodPickup);
 	}
 
-	if (player.x + player.xSize > stickPickup.x && player.x < stickPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < stickPickup.y + 64 && area == 1)
+	if (player.x + player.xSize > flintPickup.x && player.x < flintPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < flintPickup.y + 64 && area == 1)
 	{
-		if (!stickPickup.used) {
-				inventory.push(stickPickup);
-				stickPickup.used = true;
+		if (!flintPickup.used) {
+				inventory.push(flintPickup);
+				flintPickup.used = true;
+			}
+	}	
+	
+	if (player.x + player.xSize > vinePickup.x && player.x < vinePickup.x + 64 && player.y + player.ySize > vinePickup.y && player.y < vinePickup.y + 64 && area == 1)
+	{
+		if (!vinePickup.used) {
+				inventory.push(vinePickup);
+				vinePickup.used = true;
 			}
 	}	
 
@@ -705,7 +737,15 @@ function checkCollision()
 				inventory.push(rockPickup);
 				rockPickup.used = true;
 			}
-	}
+	}	
+	
+	if (player.x + player.xSize > stickPickup.x && player.x < stickPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < stickPickup.y + 64 && area == 1)
+	{
+		if (!stickPickup.used) {
+				inventory.push(stickPickup);
+				stickPickup.used = true;
+			}
+	}	
 
 	if (player.x + player.xSize - 8 > tree.x && player.x < tree.x + 56 && player.y + player.ySize > tree.y && player.y < tree.y + 32 && tree.used == false)
 	{
@@ -1094,44 +1134,148 @@ function isIntersect(point, elem) {
 
 function craftItem(item1, item2) {
 	if (item1 == stickPickup && item2 == rockPickup) {
-		sfx_Craft.play();
 		craftInv.push(axePickup);
 	}
 	
 	else if (item1 == rockPickup && item2 == stickPickup) {
-		sfx_Craft.play();
 		craftInv.push(axePickup);
-	}
-	
-	else if (item1 == flintPickup && item2 == stickPickup) {
-		sfx_Craft.play();
-		craftInv.push(firePickup);
-	}
-	
-	else if (item1 == stickPickup && item2 == flintPickup) {
-		sfx_Craft.play();
-		craftInv.push(firePickup);
-	}
+	}	
 	
 	else if (item1 == vinePickup && item2 == stickPickup) {
-		sfx_Craft.play();
 		craftInv.push(rodPickup);
-	}
+	}	
 	
 	else if (item1 == stickPickup && item2 == vinePickup) {
-		sfx_Craft.play();
 		craftInv.push(rodPickup);
-	}
+	}	
 	
-	else if (item1 == hidePickup && item2 == vinePickup) {
-		sfx_Craft.play();
-		craftInv.push(bootPickup);
-	}
+	else if (item1 == vinePickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}	
 	
 	else if (item1 == vinePickup && item2 == hidePickup) {
-		sfx_Craft.play();
 		craftInv.push(bootPickup);
+	}	
+	
+	else if (item1 == hidePickup && item2 == vinePickup) {
+		craftInv.push(bootPickup);
+	}	
+	
+	else if (item1 == stickPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == stickPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == stickPickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == stickPickup) {
+		craftInv.push(null);
 	}
+	
+	else if (item1 == vinePickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == logPickup && item2 == flintPickup) {
+		craftInv.push(firePickup);
+	}	
+	
+	else if (item1 == flintPickup && item2 == logPickup) {
+		craftInv.push(firePickup);
+	}		
+	
+	else if (item1 == vinePickup && item2 == logPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == logPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == rockPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == stickPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == stickPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == axePickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == axePickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == foodPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == foodPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == rodPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == rodPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == firePickup && item2 == foodPickup) {
+		craftInv.push(cookedPickup);
+	}	
+	
+	else if (item1 == foodPickup && item2 == firePickup) {
+		craftInv.push(cookedPickup);
+	}		
 	
 	else 
 		craftInv.pop();
@@ -1281,6 +1425,7 @@ function gameOver()
 		
 		document.getElementById("endGame").style.visibility = "visible";
 	}
+	openRestartMenu();
 }
 
 function render() 

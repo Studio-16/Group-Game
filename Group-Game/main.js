@@ -346,6 +346,12 @@ function renderMenu () {
 		surface.drawImage(boxCtrls.image, boxCtrls.x, boxCtrls.y, 300, 350);
 		surface.drawImage(btnBack.image, btnBack.x, btnBack.y, btnWidth, btnHeight);
 		
+		surface.drawImage(stickPickup.image, (canvas.width/2) - 32, boxCtrls.y + 300, 32, 32);
+		surface.drawImage(crftPlus.image,(canvas.width/2), boxCtrls.y + 300, 32, 32);
+		surface.drawImage(rockPickup.image, (canvas.width/2) + 32, boxCtrls.y + 300, 32, 32);
+		surface.drawImage(crftEqual.image,(canvas.width/2) + 64, boxCtrls.y + 300, 32, 32);
+		surface.drawImage(axePickup.image,(canvas.width/2) + 96, boxCtrls.y + 300, 32, 32);
+		
 		if (lang == "EN") {
 			surface.fillText("CONTROLS", canvas.width/2 , boxCtrls.y + 64)
 			
