@@ -69,7 +69,7 @@ axePickup.image.src = "img/axe.png";
 
 var logPickup = {x:0, y:0, width:64, height:64, used:false}
 logPickup.image = new Image();
-logPickup.image.src = "img/logs.png";
+logPickup.image.src = "img/logs.png"
 
 var crftPlus = {}
 crftPlus.image = new Image();
@@ -93,7 +93,7 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var endTime = 180;
+var endTime = 360;
 var currentTime = 0;
 var endTimer;
 
@@ -108,24 +108,9 @@ var warpZone0 = [];
 var warpZone1 = [];
 var warpZone2 = [];
 
-var aud_Music = new Audio ("audio/mus_Main.mp3");
-aud_Music.loop = true;
-aud_Music.volume = 0.25;
-	
-var aud_Death = new Audio ("audio/snd_Death.wav");
-aud_Death.volume = 0.5;
-
-var aud_Monster = new Audio("audio/snd_Monster.wav");
-aud_Monster.loop = true;
-aud_Monster.volume = 0.5;
-
-var aud_Win = new Audio ("audio/mus_Win.wav");
-aud_Win.volume = 0.5;
-
-var aud_Lose = new Audio("audio/mus_Lose.wav");
-aud_Lose.volume = 0.5;
-
 var textBoxOpen = false;
+	
+var rndNum;	
 	
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
@@ -373,17 +358,21 @@ canvas.addEventListener("mousedown", boomerangAttack);
 
 createMap();
 
-aud_Music.play();
-
 var fps = 60;
 var updateInterval;
 
 function update()
 {
-	if (mainMenuOpen || optMenuOpen)
+if (mainMenuOpen || optMenuOpen || controlsMenuOpen) {
+		mus_Menu.play();
+		mus_Game.pause();
+		
 		renderMenu();
-	
+	}
 	else {
+		mus_Menu.pause();
+		mus_Game.play();
+		
 		if (!pauseMenuOpen) {
 			render();
 			movePlayer();
@@ -613,6 +602,18 @@ function meleeAttack()
 			weapon.dirX = -48;
 			weapon.dirY = -24; 
 		}	
+		
+		rndNum = Math.floor((Math.random() * 3) + 1);
+		
+		if (rndNum == 1) 
+			sfx_Swing_1.play();
+		
+		else if (rndNum == 2)
+			sfx_Swing_2.play();
+		
+		else if (rndNum == 3)
+			sfx_Swing_3.play();
+		
 		weapon.attack = true;
 		console.log("attack");
 	}	
@@ -715,12 +716,12 @@ function enemyMovement()
 	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);	
 	if (enemy.distance < 500 && enemy.stun == false && enemy.dead == false)
 	{
-		aud_Monster.play();
+		sfx_Enemy_Mushroom.play();
 		enemy.x += enemy.speedX;
 		enemy.y += enemy.speedY;
 	}
 	else {
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 	}
 
 	enemyStump.dx = player.x - enemyStump.x;
@@ -754,8 +755,7 @@ function enemyMovement()
 	}
 	else 
 	{
-		enemyStump.idle = true;
-		aud_Monster.pause();
+		sfx_Boomerang.play();
 	}
 }
 
@@ -768,11 +768,19 @@ function checkCollision()
 				inventory.push(foodPickup);
 	}
 
-	if (player.x + player.xSize > stickPickup.x && player.x < stickPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < stickPickup.y + 64 && area == 1)
+	if (player.x + player.xSize > flintPickup.x && player.x < flintPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < flintPickup.y + 64 && area == 1)
 	{
-		if (!stickPickup.used) {
-				inventory.push(stickPickup);
-				stickPickup.used = true;
+		if (!flintPickup.used) {
+				inventory.push(flintPickup);
+				flintPickup.used = true;
+			}
+	}	
+	
+	if (player.x + player.xSize > vinePickup.x && player.x < vinePickup.x + 64 && player.y + player.ySize > vinePickup.y && player.y < vinePickup.y + 64 && area == 1)
+	{
+		if (!vinePickup.used) {
+				inventory.push(vinePickup);
+				vinePickup.used = true;
 			}
 	}	
 
@@ -782,7 +790,15 @@ function checkCollision()
 				inventory.push(rockPickup);
 				rockPickup.used = true;
 			}
-	}
+	}	
+	
+	if (player.x + player.xSize > stickPickup.x && player.x < stickPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < stickPickup.y + 64 && area == 1)
+	{
+		if (!stickPickup.used) {
+				inventory.push(stickPickup);
+				stickPickup.used = true;
+			}
+	}	
 
 	if (player.x + player.xSize - 8 > tree.x && player.x < tree.x + 56 && player.y + player.ySize > tree.y && player.y < tree.y + 32 && tree.used == false)
 	{
@@ -816,6 +832,7 @@ function checkCollision()
 
 	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50 && enemy.dead == false && area == 2)
 	{	
+		sfx_Hurt.play();
 		playerHealth--;
 		player.x += enemy.speedX*200;
 		player.y += enemy.speedY*200;
@@ -932,6 +949,7 @@ function checkCollision()
 	
 	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
 	{
+		sfx_Boomerang.pause();
 		boomerang.thrown = false;
 		clearInterval(boomerangTime);
 		boomerang.timeThrown = 0;
@@ -940,7 +958,7 @@ function checkCollision()
 
 	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 		boomerang.timeThrown = 1;
 		enemy.stun = true;
 		timeStunned = setInterval(stunTimer, 1000);
@@ -949,7 +967,8 @@ function checkCollision()
 
 	if (player.x + weapon.dirX + weapon.xSize > enemy.x + 20 && player.x + weapon.dirX < enemy.x + 28 && player.y + weapon.dirY + weapon.ySize > enemy.y + 28 && player.y + weapon.dirY < enemy.y + 50 && weapon.attack == true)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
+		sfx_Swing_Hit.play();
 		enemy.dead = true;
 		console.log("Weapon Hit Enemy");
 	}
@@ -974,6 +993,7 @@ function checkCollision()
 	{
 		if (!tree.used) 
 		{
+			sfx_Swing_Hit.play();
 			inventory.push(logPickup);
 			tree.used = true;
 		}
@@ -1066,22 +1086,34 @@ function openPauseMenu() {
 			canvasPause.textAlign = "center";
 			canvasPause.fillStyle = "black";
 			
+			if (lang == "EN") {	
 			canvasPause.fillText("PAUSED", (elemPause.width/2), 40);
-
-			btnSave.x = (elemPause.width/2) - 96;
-			btnSave.y = (elemPause.height/2) - 128;
-			btnLoad.x = (elemPause.width/2) - 96;
-			btnLoad.y = (elemPause.height/2) - 32;
-			btnExit.x = (elemPause.width/2) - 96;
-			btnExit.y = (elemPause.height/2) + 64;
 			
-			canvasPause.drawImage(btnSave.image, btnSave.x, btnSave.y, btnWidth, btnHeight);
-			canvasPause.drawImage(btnLoad.image, btnLoad.x, btnLoad.y, btnWidth, btnHeight);
-			canvasPause.drawImage(btnExit.image, btnExit.x, btnExit.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseOptions.image, btnPauseOptions.x, btnPauseOptions.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseControls.image, btnPauseControls.x, btnPauseControls.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseExit.image, btnPauseExit.x, btnPauseExit.y, btnWidth, btnHeight);
 		
-			canvasPause.fillText("SAVE", btnSave.x + (btnWidth / 2), btnSave.y + 45);
-			canvasPause.fillText("LOAD", btnLoad.x + (btnWidth / 2), btnLoad.y + 45);
-			canvasPause.fillText("EXIT", btnExit.x + (btnWidth / 2), btnExit.y + 45);
+			canvasPause.fillText("OPTIONS", btnPauseOptions.x + (btnWidth / 2), btnPauseOptions.y + 45);
+			canvasPause.fillText("EXIT", btnPauseExit.x + (btnWidth / 2), btnPauseExit.y + 45);
+			
+			canvasPause.font = "bold 32px Arial";
+			canvasPause.fillText("CONTROLS", btnPauseControls.x + (btnWidth / 2), btnPauseControls.y + 45);
+			}
+			
+			else if (lang == "FR") {	
+			canvasPause.fillText("PAUSED", (elemPause.width/2), 40);
+			
+			canvasPause.drawImage(btnPauseOptions.image, btnPauseOptions.x, btnPauseOptions.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseControls.image, btnPauseControls.x, btnPauseControls.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseExit.image, btnPauseExit.x, btnPauseExit.y, btnWidth, btnHeight);
+		
+			canvasPause.fillText("OPTIONS", btnPauseOptions.x + (btnWidth / 2), btnPauseOptions.y + 45);
+			canvasPause.fillText("SORTIR", btnPauseExit.x + (btnWidth / 2), btnPauseExit.y + 45);
+			
+			canvasPause.font = "bold 28px Arial";
+			canvasPause.fillText("CONTRÔLES", btnPauseControls.x + (btnWidth / 2), btnPauseControls.y + 45);
+			
+			}
 		}
 		
 		else {
@@ -1098,10 +1130,10 @@ function openRestartMenu() {
 	canvasRestart.textAlign = "center";
 	canvasRestart.fillStyle = "black";
 	
+	canvasRestart.drawImage(btnYes.image, btnYes.x, btnYes.y, btnWidth, btnHeight);
+	canvasRestart.drawImage(btnNo.image, btnNo.x, btnNo.y, btnWidth, btnHeight);
+	
 	if (lang == "EN") {		
-		canvasRestart.drawImage(btnYes.image, btnYes.x, btnYes.y, btnWidth, btnHeight);
-		canvasRestart.drawImage(btnNo.image, btnNo.x, btnNo.y, btnWidth, btnHeight);
-		
 		canvasRestart.font = "bold 30px Arial";
 		canvasRestart.fillText("You Died!!! ", (elemRestart.width/2), 40);
 		canvasRestart.fillText("Would You Like To Restart?", (elemRestart.width/2), 68);
@@ -1111,8 +1143,15 @@ function openRestartMenu() {
 		canvasRestart.fillText("NO", btnNo.x + (btnWidth / 2), btnNo.y + 45);
 		
 	}
-	else if (lang == "FR")
-		document.getElementById("endGame").innerHTML = "Tu es mort...";
+	else if (lang == "FR") {
+		canvasRestart.font = "bold 30px Arial";
+		canvasRestart.fillText("Tu es Mort!!! ", (elemRestart.width/2), 40);
+		canvasRestart.fillText("Voulez-vous Redémarrer?", (elemRestart.width/2), 68);
+		
+		canvasRestart.font = "bold 36px Arial";
+		canvasRestart.fillText("OUI", btnYes.x + (btnWidth / 2), btnYes.y + 45);
+		canvasRestart.fillText("NON", btnNo.x + (btnWidth / 2), btnNo.y + 45);
+	}
 	
 	document.getElementById("endGame").style.visibility = "visible";
 }
@@ -1146,6 +1185,7 @@ function clickItem(event) {
 			if (inventory.length >= 1) {
 				if (isIntersect(mousePos, {offsetLeft: inventory[inventory.indexOf(foodPickup)].x, offsetTop: inventory[inventory.indexOf(foodPickup)].y, width: inventory[inventory.indexOf(foodPickup)].width, height: inventory[inventory.indexOf(foodPickup)].height})) {
 					if (playerHealth < 3) {
+						sfx_Eat.play();
 						playerHealth++;
 						inventory.splice(inventory.indexOf(foodPickup), 1);
 					}
@@ -1190,6 +1230,146 @@ function craftItem(item1, item2) {
 	if (item1 == stickPickup && item2 == rockPickup) {
 		craftInv.push(axePickup);
 	}
+	
+	else if (item1 == rockPickup && item2 == stickPickup) {
+		craftInv.push(axePickup);
+	}	
+	
+	else if (item1 == vinePickup && item2 == stickPickup) {
+		craftInv.push(rodPickup);
+	}	
+	
+	else if (item1 == stickPickup && item2 == vinePickup) {
+		craftInv.push(rodPickup);
+	}	
+	
+	else if (item1 == vinePickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == vinePickup && item2 == hidePickup) {
+		craftInv.push(bootPickup);
+	}	
+	
+	else if (item1 == hidePickup && item2 == vinePickup) {
+		craftInv.push(bootPickup);
+	}	
+	
+	else if (item1 == stickPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == stickPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == stickPickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == stickPickup) {
+		craftInv.push(null);
+	}
+	
+	else if (item1 == vinePickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == logPickup && item2 == flintPickup) {
+		craftInv.push(firePickup);
+	}	
+	
+	else if (item1 == flintPickup && item2 == logPickup) {
+		craftInv.push(firePickup);
+	}		
+	
+	else if (item1 == vinePickup && item2 == logPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == logPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == rockPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == stickPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == stickPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == axePickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == axePickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == foodPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == foodPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == rodPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == rodPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == firePickup && item2 == foodPickup) {
+		craftInv.push(cookedPickup);
+	}	
+	
+	else if (item1 == foodPickup && item2 == firePickup) {
+		craftInv.push(cookedPickup);
+	}		
 	
 	else 
 		craftInv.pop();
@@ -1286,10 +1466,10 @@ function movePlayer()
 }
 
 function playerDead() {
-	aud_Monster.pause();
-	aud_Death.play();
-	aud_Monster.loop = false;
-	aud_Music.pause();
+	sfx_Enemy_Mushroom.pause();
+	sfx_Death.play();
+	sfx_Enemy_Mushroom.loop = false;
+	mus_Game.pause();
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
 	openRestartMenu();
@@ -1314,15 +1494,14 @@ function endGameTimer()
 			gameOver();
 	}	
 }
-
 function gameOver() 
 {
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
-	aud_Music.pause();	
+	mus_Game.pause();	
 	
 	if (enemy.dead == true) {
-		aud_Win.play();
+		mus_Win.play();
 		if (lang == "EN")
 			document.getElementById("endGame").innerHTML = "You Defeated The Enemy! You Win!";
 		else if (lang == "FR")
@@ -1331,8 +1510,8 @@ function gameOver()
 		document.getElementById("endGame").style.visibility = "visible";
 	}
 	else {
-		aud_Monster.pause();
-		aud_Lose.play();
+		sfx_Enemy_Mushroom.pause();
+		mus_Lose.play();
 		if (lang == "EN")
 			document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
 		else if (lang == "FR")
@@ -1340,6 +1519,7 @@ function gameOver()
 		
 		document.getElementById("endGame").style.visibility = "visible";
 	}
+	openRestartMenu();
 }
 
 function render() 
@@ -1424,5 +1604,6 @@ function render()
 	}
 	
 	for (var ctr = 0; ctr < playerHealth; ctr++)
-		canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);	
+		canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);
+	
 }
