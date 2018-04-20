@@ -20,7 +20,6 @@ canvas
 	color: white;
 	border: 5px solid black;
 	width: 18%;
-	top: 0px;
 	background-color: gray;
 	visibility: hidden;
 }
@@ -34,8 +33,8 @@ canvas
 	right: auto;
 	color: black;
 	border: 5px solid black;
-	width: 25%;
-	height: 96px;
+	width: 18%;
+	height: 64px;
 	background-color: #D3D3D3;
 	visibility: hidden;
 }
@@ -67,10 +66,9 @@ canvas
 
 #health
 {
-	position: absolute;
-	left: 100px;
-	right: 100px;
-	top: 64px;
+	position: fixed;
+	left:26%;
+	top: 25px;
 	border: 5px solid black;
 	background-color: #D3D3D3;
 	visibility: hidden;
