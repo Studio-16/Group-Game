@@ -1,4 +1,4 @@
-var boss_Flower = {speed:.2, x:1700, y:1700, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:1, currentFrame:0, maxFrames:60, health: 3, attackable: true, stun:false, dead:false, stunTime:0, open: true, idle:false, oldPosX:0, oldPosY:0, size:96}
+var boss_Flower = {speed:.2, x:1700, y:1700, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:1, currentFrame:0, maxFrames:60, health: 3, flash:false, stun:false, dead:false, stunTime:0, open: true, idle:false, oldPosX:0, oldPosY:0, size:96}
 boss_Flower.image = new Image();
 boss_Flower.image.src = "img/boss_Flower_Open.png";
 
@@ -15,13 +15,13 @@ boss_Flower_Seed_3.image = new Image();
 boss_Flower_Seed_3.image.src = "img/boss_Flower_Seed.png";
 
 var timeOpen;
-var timeAttack;
+var timeFlash;
 
 timeOpen = setInterval(openFlower, 7000);
 
-
 function openFlower()
 {
+	clearInterval(timeOpen);
 	boss_Flower.open = !boss_Flower.open;
 	
 	if (boss_Flower.open) 
@@ -29,6 +29,18 @@ function openFlower()
 	
 	else
 		boss_Flower.image.src = "img/boss_Flower_Closed.png";
+	timeOpen = setInterval(openFlower, 7000);
+}
+
+function boss_Flash() {
+	boss_Flower.flash = !boss_Flower.flash;
+	
+	if (boss_Flower.flash) 
+		boss_Flower.image.src = "img/boss_Flower_Closed_Flash.png";
+	
+	else
+		boss_Flower.image.src = "img/boss_Flower_Closed.png";
+
 }
 
 function boss_Movement()
@@ -58,8 +70,18 @@ function boss_Movement()
 			boss_Flower.dir = 0;
 		}		
 		boss_Flower.idle = false;
-		boss_Flower.x += boss_Flower.xSpeed;
-		boss_Flower.y += boss_Flower.ySpeed;
+		if (boss_Flower.open) {
+			boss_Flower.xSpeed *= 2;
+			boss_Flower.ySpeed *= 2;
+			boss_Flower.x -= boss_Flower.xSpeed;
+			boss_Flower.y -= boss_Flower.ySpeed;
+		}
+		
+		else {
+			boss_Flower.x += boss_Flower.xSpeed;
+			boss_Flower.y += boss_Flower.ySpeed;
+		}
+
 	}
 	
 	seed_Movement();
@@ -86,31 +108,51 @@ function boss_Collision() {
 	if (player.x + player.xSize > boss_Flower.x + 40 && player.x < boss_Flower.x + 48 && player.y + player.ySize > boss_Flower.y + 20 && player.y < boss_Flower.y + 80 && boss_Flower.dead == false)
 	{	
 		playerHealth--;
-		player.x += boss_Flower.xSpeed*400;
-		player.y += boss_Flower.ySpeed*400;	
+		player.x += boss_Flower.xSpeed*600;
+		player.y += boss_Flower.ySpeed*600;
+
+		if (playerHealth <= 0) {
+			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+			playerDead();	
+		}
 	}
 	
-	else if (player.x + player.xSize > boss_Flower_Seed_1.x + 20 && player.x < boss_Flower_Seed_1.x + 20 && player.y + player.ySize > boss_Flower_Seed_1.y + 20 && player.y < boss_Flower_Seed_1.y + 20)
+	else if (player.x + player.xSize > boss_Flower_Seed_1.x + 20 && player.x < boss_Flower_Seed_1.x + 20 && player.y + player.ySize > boss_Flower_Seed_1.y + 20 && player.y < boss_Flower_Seed_1.y + 20 && boss_Flower.dead == false)
 	{	
 		playerHealth--;
-		player.x += boss_Flower.xSpeed*400;
-		player.y += boss_Flower.ySpeed*400;	
+		player.x += boss_Flower.xSpeed*600;
+		player.y += boss_Flower.ySpeed*600;
+
+		if (playerHealth <= 0) {
+			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+			playerDead();	
+		}			
 	}
 	
-	else if (player.x + player.xSize > boss_Flower_Seed_2.x + 20 && player.x < boss_Flower_Seed_2.x + 20 && player.y + player.ySize > boss_Flower_Seed_2.y + 20 && player.y < boss_Flower_Seed_2.y + 20)
+	else if (player.x + player.xSize > boss_Flower_Seed_2.x + 20 && player.x < boss_Flower_Seed_2.x + 20 && player.y + player.ySize > boss_Flower_Seed_2.y + 20 && player.y < boss_Flower_Seed_2.y + 20 && boss_Flower.dead == false)
 	{	
 		playerHealth--;
-		player.x += boss_Flower.xSpeed*400;
-		player.y += boss_Flower.ySpeed*400;	
+		player.x += boss_Flower.xSpeed*600;
+		player.y += boss_Flower.ySpeed*600;	
+
+		if (playerHealth <= 0) {
+			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+			playerDead();	
+		}	
 	}
 	
-	else if (player.x + player.xSize > boss_Flower_Seed_3.x + 20 && player.x < boss_Flower_Seed_3.x + 20 && player.y + player.ySize > boss_Flower_Seed_3.y + 20 && player.y < boss_Flower_Seed_3.y + 20)
+	else if (player.x + player.xSize > boss_Flower_Seed_3.x + 20 && player.x < boss_Flower_Seed_3.x + 20 && player.y + player.ySize > boss_Flower_Seed_3.y + 20 && player.y < boss_Flower_Seed_3.y + 20 && boss_Flower.dead == false)
 	{	
 		playerHealth--;
-		player.x += boss_Flower.xSpeed*400;
-		player.y += boss_Flower.ySpeed*400;	
+		player.x += boss_Flower.xSpeed*600;
+		player.y += boss_Flower.ySpeed*600;	
+
+		if (playerHealth <= 0) {
+			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+			playerDead();	
+		}	
 	}
-	
+		
 	if (boomerang.x + boomerang.size > boss_Flower.x + 40 && boomerang.x < boss_Flower.x + 48 && boomerang.y + boomerang.size > boss_Flower.y + 20 && boomerang.y < boss_Flower.y + 80 && boomerang.thrown == true && boss_Flower.stun == false && boss_Flower.open == true)
 	{
 		//aud_Monster.pause();
@@ -120,15 +162,16 @@ function boss_Collision() {
 		console.log("Boomerang Hit Boss");
 	}
 
-	if (player.x + weapon.dirX + weapon.xSize > boss_Flower.x + 40 && player.x + weapon.dirX < boss_Flower.x + 48 && player.y + weapon.dirY + weapon.ySize > boss_Flower.y + 20 && player.y + weapon.dirY < boss_Flower.y + 80 && weapon.attack == true && boss_Flower.open == true && boss_Flower.attackable == true)
+	if (player.x + weapon.dirX + weapon.xSize > boss_Flower.x + 40 && player.x + weapon.dirX < boss_Flower.x + 48 && player.y + weapon.dirY + weapon.ySize > boss_Flower.y + 20 && player.y + weapon.dirY < boss_Flower.y + 80 && weapon.attack == true && boss_Flower.open == true)
 	{
+		timeFlash = setInterval(boss_Flash, 250);
 		boss_Flower.health--;
-		boss_Flower.attackable = false;
-		timeAttack = setTimeout(function() {boss_Flower.attackable = true;}, 500);
+		openFlower();
+		endFlash = setTimeout(function() {clearInterval(timeFlash);}, 1000);
 		
 		if (boss_Flower.health <= 0)
-			boss_Flower.dead = true;
-		
+			bossDead = setTimeout(function() {boss_Flower.dead = true;}, 1100);
+			
 	}
 }
 
