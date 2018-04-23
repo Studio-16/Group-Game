@@ -1745,9 +1745,11 @@ function render()
 	}
 		
 	for (var ctr = 0; ctr < craftInv.length; ctr++) {
-		craftInv[ctr].x = ctr * 128;
-		craftInv[ctr].y = 0;
-		canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
+		if (craftInv[ctr] != null) {
+			craftInv[ctr].x = ctr * 128;
+			craftInv[ctr].y = 0;
+			canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
+		}
 	}
 				
 	if (!inventory.includes(foodPickup) || craftInv.includes(foodPickup))

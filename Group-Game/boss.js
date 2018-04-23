@@ -1,4 +1,4 @@
-var boss_Flower = {speed:.2, x:1450, y:1650, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:1, currentFrame:0, maxFrames:60, health: 3, flash:false, stun:false, dead:false, stunTime:0, open: true, idle:false, oldPosX:0, oldPosY:0, size:84}
+var boss_Flower = {speed:.2, x:450, y:650, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:1, currentFrame:0, maxFrames:60, health: 3, flash:false, stun:false, dead:false, stunTime:0, open: true, idle:false, oldPosX:0, oldPosY:0, size:84}
 boss_Flower.image = new Image();
 boss_Flower.image.src = "img/boss_Flower_Open.png";
 
