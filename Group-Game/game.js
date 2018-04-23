@@ -26,12 +26,12 @@ player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:2184, y:1146, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, dead:false, stunTime:0, size:32}
+var enemy = {speed:.5, x:2184, y:1146, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, dead:false, stunTime:0, size:32, health:2}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 var enemyOldPosition = {x:enemy.x, y:enemy.y};
 
-var enemyStump = {speed:.5, x:3605, y:2098, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:2, currentFrame:0, maxFrames:60, stun:false, dead:false, stunTime:0, idle:true, oldPosX:0, oldPosY:0, size:32}
+var enemyStump = {speed:.5, x:3605, y:2098, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:2, currentFrame:0, maxFrames:60, stun:false, dead:false, stunTime:0, idle:true, oldPosX:0, oldPosY:0, size:32, health:3}
 enemyStump.image = new Image();
 enemyStump.image.src = "img/enemyStump.png";
 
@@ -55,11 +55,11 @@ var sign = {x:1280, y:1280, width:64, height:64}
 sign.image = new Image();
 sign.image.src = "img/sign.png";
 
-var stickPickup = {x:456, y:128, width:64, height:64, used:false}
+var stickPickup = {x:1550, y:2000, width:64, height:64, used:false}
 stickPickup.image = new Image();
 stickPickup.image.src = "img/stick.png";
 
-var rockPickup = {x:456, y:768, width:64, height:64, used:false}
+var rockPickup = {x:2100, y:1900, width:64, height:64, used:false}
 rockPickup.image = new Image();
 rockPickup.image.src = "img/rock.png";
 
@@ -404,8 +404,8 @@ if (mainMenuOpen || optMenuOpen || controlsMenuOpen) {
 			checkCollision();
 			objectMovement();
 			enemyMovement();
-			console.log("X:"+player.x);
-			console.log("Y:"+player.y);
+			//console.log("X:"+player.x);
+			//console.log("Y:"+player.y);
 		}
 	}
 }
@@ -568,7 +568,7 @@ function stunTimer()
 
 function boomerangAttack(e)
 {
-	if (!mainMenuOpen) {
+	if (!mainMenuOpen && !optMenuOpen && !controlsMenuOpen) {
 		if (boomerang.thrown == false)
 		{
 			var mousePosition = getMousePos(canvas, e);
@@ -583,7 +583,10 @@ function boomerangAttack(e)
 			boomerang.speedY = boomerang.speed * (boomerang.dy / boomerang.distance);
 			boomerangTime = setInterval(boomerangTimer, 1000);
 		}
+		if(boomerang.thrown == true)
+			sfx_Boomerang.play();
 	}
+
 }
 
 function meleeAttack() 
@@ -772,14 +775,10 @@ function enemyMovement()
 		{
 			enemyStump.dir = 2;
 		}		
-		aud_Monster.play();
+		sfx_Enemy_Mushroom.play();
 		enemyStump.idle = false;
 		enemyStump.x += enemyStump.speedX;
 		enemyStump.y += enemyStump.speedY;
-	}
-	else 
-	{
-		sfx_Boomerang.play();
 	}
 }
 
@@ -808,7 +807,7 @@ function checkCollision()
 			}
 	}	
 
-	if (player.x + player.xSize > rockPickup.x && player.x < rockPickup.x + 64 && player.y + player.ySize > rockPickup.y && player.y < rockPickup.y + 64 && area == 2)
+	if (player.x + player.xSize > rockPickup.x && player.x < rockPickup.x + 64 && player.y + player.ySize > rockPickup.y && player.y < rockPickup.y + 64 && area == 0)
 	{
 		if (!rockPickup.used) {
 				inventory.push(rockPickup);
@@ -999,7 +998,7 @@ function checkCollision()
 
 	if (boomerang.x + boomerang.size > enemyStump.x + 20 && boomerang.x < enemyStump.x + 28 && boomerang.y + boomerang.size > enemyStump.y + 28 && boomerang.y < enemyStump.y + 50 && boomerang.thrown == true && enemyStump.stun == false)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 		boomerang.timeThrown = 1;
 		enemyStump.stun = true;
 		timeStunned = setInterval(stunTimer, 1000);
@@ -1008,8 +1007,11 @@ function checkCollision()
 
 	if (player.x + weapon.dirX + weapon.xSize > enemyStump.x + 20 && player.x + weapon.dirX < enemyStump.x + 28 && player.y + weapon.dirY + weapon.ySize > enemyStump.y + 28 && player.y + weapon.dirY < enemyStump.y + 50 && weapon.attack == true)
 	{
-		aud_Monster.pause();
-		enemyStump.dead = true;
+		sfx_Enemy_Mushroom.pause();
+		sfx_Swing_Hit.play();
+		enemyStump.health--;
+		if(enemyStump.health <= 0)
+			enemyStump.dead = true;
 		console.log("Weapon Hit Enemy");
 	}
 
@@ -1561,7 +1563,8 @@ function render()
 			for ( var col = 0; col < COLS; col++)
 				surface.drawImage(map[row][col].img,map[row][col].x,map[row][col].y, 64, 64);
 		}
-		
+		if (!rockPickup.used)
+			surface.drawImage(rockPickup.image, rockPickup.x, rockPickup.y);
 		surface.drawImage(sign.image, sign.x, sign.y);
 	}
 
@@ -1580,9 +1583,6 @@ function render()
 			for ( var col = 0; col < COLSAREA2; col++)
 				surface.drawImage(mapArea2[row][col].img,mapArea2[row][col].x,mapArea2[row][col].y, 64, 64);
 		}
-		
-		if (!rockPickup.used)
-			surface.drawImage(rockPickup.image, rockPickup.x, rockPickup.y);
 	}
 
 	for (var ctr = 0; ctr < inventory.length; ctr++) {
@@ -1628,6 +1628,5 @@ function render()
 	}
 	
 	for (var ctr = 0; ctr < playerHealth; ctr++)
-		canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);
-	
+		canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);	
 }
