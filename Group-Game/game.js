@@ -420,8 +420,6 @@ createMap();
 var fps = 60;
 var updateInterval;
 
-inventory.push(axePickup);
-
 function update()
 {
 if (mainMenuOpen || optMenuOpen || controlsMenuOpen) {
