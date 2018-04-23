@@ -107,7 +107,7 @@ var crftEqual = {}
 crftEqual.image = new Image();
 crftEqual.image.src = "img/craftingEquals.png";
 
-var playerHealth = 30;
+var playerHealth = 3;
 
 var heart = {}
 heart.image = new Image();
