@@ -11,6 +11,9 @@ mus_Lose.volume = 0.5;
 var mus_Menu = new Audio ("audio/mus_Menu.mp3");
 mus_Menu.volume = 0.5;
 
+var mus_Boss_Flower = new Audio ("audio/mus_Boss_Flower.mp3");
+mus_Boss_Flower.loop = true;
+mus_Boss_Flower.volume = 0.3;
 
 var sfx_Death = new Audio ("audio/sfx_Death.mp3");
 sfx_Death.volume = 0.5;
@@ -42,3 +45,9 @@ sfx_Eat.volume = 0.5;
 
 var sfx_Craft = new Audio("audio/sfx_Craft.mp3");
 sfx_Craft.volume = 0.5;
+
+var sfx_Boss_Flower = new Audio("audio/sfx_Boss_Flower.mp3");
+sfx_Boss_Flower.volume = 0.5;
+
+var sfx_Boss_Flower_Death = new Audio("audio/sfx_Boss_Flower_Death.mp3");
+sfx_Boss_Flower_Death.volume = 0.5;

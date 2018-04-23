@@ -21,7 +21,7 @@ var mapSizeX = 5760;
 var mapSizeY = 5760;
 var area = 0;
 
-var player = {x:1544, y:1404, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
+var player = {x:1544, y:1404, idle:true, attackable: true, flash: false, frame:0, dir:2, speed:1, xSize:48, ySize:64}
 player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
@@ -50,6 +50,10 @@ foodPickup.image.src = "img/carrot.png";
 var tree = {x: 1408, y:1476, width:64, height:64, used:false}
 tree.image = new Image();
 tree.image.src = "img/treeSingle.png";
+
+var tree_Boss = {x: 580, y:1396, width:64, height:64, used:false}
+tree_Boss.image = new Image();
+tree_Boss.image.src = "img/treeSingle.png";
 
 var sign = {x:1280, y:1280, width:64, height:64}
 sign.image = new Image();
@@ -103,7 +107,7 @@ var crftEqual = {}
 crftEqual.image = new Image();
 crftEqual.image.src = "img/craftingEquals.png";
 
-var playerHealth = 3;
+var playerHealth = 30;
 
 var heart = {}
 heart.image = new Image();
@@ -128,9 +132,12 @@ var mapFarm = [];
 var mapCollidable = [];
 var mapCollidableArea1 = [];
 var mapCollidableArea2 = [];
+var mapCollidableBoss = [];
+
 var warpZone0 = [];
 var warpZone1 = [];
 var warpZone2 = [];
+var warpZoneBoss = [];
 
 var textBoxOpen = false;
 	
@@ -156,16 +163,19 @@ var imgStr1 =   ["1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
 				 "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113",
 				 "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "127", "128",
 				 "129", "130", "131", "132", "133", "134", "135", "136", "137", "138", "139", "140", "141", "142", "143", "144",
-				 "145", "146", "147", "148", "149", "150"];
+				 "145", "146", "147", "148", "149", "150", "151"];
 
-var imgStr2 =   ["1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
+var imgStr2 =   ["1", "1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
 				 "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38",
 				 "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53",
-				 "54", "55", "56", "57", "58", "59", "60", "61"];				 
+				 "54", "55", "56", "57", "58", "59", "60", "61"];	
+
+var imgStr3 = ["1","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19"];			 
 
 var images = [];
 var images1 = [];
 var images2 = [];
+var images3 = [];
 
 var map =
 [
@@ -294,7 +304,7 @@ var mapArea1 =
 	[145, 124, 126, 23, 34, 43, 5, 140, 6, 12, 23, 142, 8, 16, 37, 7, 128, 124, 124, 124, 124, 124, 124, 124, 125, 4, 15, 4, 4, 4, 14, 7, 6, 9, 6, 9, 6, 6, 5, 4, 4, 36, 4, 50, 5, 5, 5, 5, 9, 9, 7, 1, 131, 124, 124, 125, 73, 74, 85, 86, 74, 74, 74, 74, 74, 87, 75, 40, 7, 4, 4, 2, 2, 2, 2, 2, 41, 10, 10, 7, 3, 3, 3, 3, 3, 4, 26, 127, 124, 124], 
 	[145, 124, 126, 35, 19, 35, 21, 140, 6, 9, 4, 142, 39, 6, 37, 34, 128, 124, 124, 124, 124, 124, 124, 124, 125, 4, 4, 40, 4, 15, 11, 6, 9, 6, 11, 15, 6, 36, 41, 4, 148, 149, 8, 40, 8, 8, 4, 4, 5, 9, 9, 7, 37, 131, 124, 125, 81, 70, 93, 70, 82, 82, 82, 82, 70, 95, 83, 8, 2, 2, 33, 6, 31, 32, 2, 2, 3, 3, 10, 25, 26, 3, 3, 41, 3, 4, 4, 127, 124, 124], 
 	[145, 124, 126, 36, 26, 31, 32, 140, 21, 9, 21, 142, 29, 30, 2, 16, 127, 131, 124, 124, 124, 124, 124, 124, 125, 4, 52, 53, 7, 7, 9, 9, 5, 5, 5, 5, 40, 42, 4, 4, 73, 75, 7, 8, 31, 32, 8, 4, 4, 5, 13, 7, 4, 5, 123, 125, 89, 90, 90, 80, 90, 78, 79, 90, 78, 90, 91, 2, 41, 2, 2, 20, 6, 6, 2, 34, 2, 3, 10, 3, 3, 3, 5, 5, 34, 4, 4, 127, 124, 124], 
-	[145, 124, 126, 20, 143, 139, 139, 139, 139, 139, 139, 139, 139, 139, 138, 40, 7, 5, 124, 124, 124, 124, 124, 124, 125, 4, 4, 36, 14, 4, 7, 5, 5, 15, 5, 5, 5, 40, 4, 49, 81, 83, 7, 4, 40, 4, 4, 18, 4, 4, 2, 9, 4, 5, 123, 125, 6, 44, 45, 4, 4, 4, 4, 4, 4, 25, 137, 2, 2, 2, 2, 41, 2, 6, 6, 6, 13, 3, 10, 3, 3, 49, 3, 5, 5, 25, 4, 127, 124, 124], 
+	[145, 124, 126, 20, 143, 139, 139, 139, 139, 151, 139, 139, 139, 139, 138, 40, 7, 5, 124, 124, 124, 124, 124, 124, 125, 4, 4, 36, 14, 4, 7, 5, 5, 15, 5, 5, 5, 40, 4, 49, 81, 83, 7, 4, 40, 4, 4, 18, 4, 4, 2, 9, 4, 5, 123, 125, 6, 44, 45, 4, 4, 4, 4, 4, 4, 25, 137, 2, 2, 2, 2, 41, 2, 6, 6, 6, 13, 3, 10, 3, 3, 49, 3, 5, 5, 25, 4, 127, 124, 124], 
 	[145, 124, 126, 49, 140, 143, 139, 139, 139, 139, 139, 139, 139, 138, 142, 8, 15, 3, 124, 124, 124, 124, 124, 124, 124, 134, 1, 4, 4, 44, 45, 5, 17, 5, 5, 37, 140, 4, 4, 4, 89, 91, 4, 4, 4, 44, 45, 4, 6, 34, 4, 9, 127, 115, 124, 125, 4, 34, 16, 4, 4, 4, 4, 49, 15, 15, 25, 35, 4, 2, 2, 2, 2, 2, 2, 2, 2, 16, 10, 10, 3, 3, 14, 143, 138, 8, 7, 115, 124, 124], 
 	[145, 124, 126, 66, 140, 140, 143, 139, 139, 139, 139, 139, 138, 142, 142, 8, 13, 3, 124, 124, 124, 124, 124, 124, 124, 124, 117, 1, 4, 4, 7, 52, 53, 143, 139, 139, 8, 139, 138, 8, 31, 32, 4, 4, 4, 17, 144, 8, 138, 8, 13, 4, 115, 124, 124, 133, 2, 12, 12, 12, 12, 12, 2, 12, 12, 2, 6, 25, 36, 4, 4, 15, 17, 10, 10, 2, 2, 2, 2, 10, 2, 2, 3, 144, 137, 115, 116, 124, 124, 124], 
 	[145, 124, 126, 41, 140, 140, 140, 143, 139, 139, 139, 138, 142, 142, 142, 8, 7, 5, 124, 124, 124, 124, 124, 124, 124, 124, 124, 116, 117, 1, 4, 4, 4, 144, 141, 141, 141, 141, 137, 40, 7, 6, 6, 42, 6, 6, 6, 144, 137, 8, 130, 122, 122, 122, 122, 130, 12, 15, 4, 27, 28, 6, 6, 7, 7, 2, 11, 11, 9, 9, 9, 9, 9, 6, 16, 11, 11, 11, 11, 11, 13, 14, 13, 4, 128, 124, 124, 124, 124, 124], 
@@ -307,7 +317,7 @@ var mapArea1 =
 	[145, 124, 126, 1, 1, 6, 41, 14, 9, 1, 1, 1, 15, 6, 1, 6, 128, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 126, 21, 144, 141, 141, 141, 141, 137, 8, 7, 13, 127, 15, 9, 4, 11, 11, 11, 11, 11, 11, 11, 11, 4, 127, 17, 127, 127, 17, 22, 81, 82, 103, 104, 82, 82, 82, 83, 8, 49, 5, 5, 4, 4, 11, 16, 5, 5, 5, 5, 49, 144, 137, 7, 128, 124, 124], 
 	[145, 124, 134, 1, 4, 35, 13, 13, 41, 6, 9, 6, 1, 1, 1, 1, 128, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 126, 51, 21, 42, 31, 32, 34, 35, 4, 13, 9, 9, 4, 4, 49, 143, 138, 40, 7, 127, 127, 127, 4, 38, 16, 16, 6, 127, 44, 45, 89, 90, 111, 112, 90, 80, 90, 91, 22, 22, 11, 16, 4, 22, 22, 22, 52, 53, 5, 21, 5, 66, 17, 5, 128, 124, 124], 
 	[145, 124, 124, 134, 1, 1, 1, 1, 1, 1, 6, 6, 1, 1, 1, 1, 136, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 121, 122, 122, 122, 122, 122, 130, 33, 127, 35, 17, 16, 13, 4, 22, 22, 127, 13, 39, 127, 143, 38, 137, 7, 17, 127, 18, 43, 127, 127, 127, 11, 11, 11, 4, 22, 22, 11, 11, 14, 14, 11, 11, 22, 15, 22, 22, 5, 5, 5, 5, 42, 43, 5, 5, 5, 5, 5, 18, 5, 128, 124, 124], 
-	[145, 124, 124, 124, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 134, 135, 135, 135, 135, 135, 135, 135, 135, 114, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124], 
+	[145, 124, 124, 124, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 134, 135, 135, 135, 135, 135, 135, 135, 135, 122, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124], 
 	[145, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124],
 	[145, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 150, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124],
 ];
@@ -366,12 +376,37 @@ var mapArea2 =
 	[53, 53, 41, 21, 21, 21, 21, 41, 53, 53, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55],       
 ];
 
+var mapAreaBoss = 
+[
+[5,	1,	10,	1,	1,	10,	1,	1,	1,	10,	1,	1,	10,	1,	8],
+[2,	15,	18,	18,	19,	19,	18,	19,	18,	19,	19,	18,	18,	15,	4],
+[2,	14,	12,	12,	12,	12,	12,	12,	12,	12,	12,	12,	12,	17,	4],
+[2,	14,	12,	15,	12,	12,	12,	9,	12,	12,	12,	15,	9,	17,	4],
+[2,	14,	12,	12,	12,	12,	12,	12,	12,	12,	9,	9,	9,	17,	4],
+[2,	14,	12,	12,	12,	9,	9,	12,	9,	9,	9,	9,	9,	17,	4],
+[2,	14,	9,	9,	9,	9,	9,	12,	12,	9,	9,	9,	9,	17,	4],
+[2,	14,	9,	9,	9,	9,	9,	12,	9,	12,	12,	9,	9,	17,	4],
+[2,	14,	9,	12,	12,	12,	9,	9,	9,	9,	12,	9,	9,	17,	4],
+[2,	14,	12,	9,	9,	9,	12,	9,	9,	9,	9,	9,	9,	17,	4],
+[2,	14,	12,	9,	9,	9,	9,	9,	9,	9,	9,	9,	9,	17,	4],
+[2,	14,	12,	15,	9,	9,	9,	9,	12,	12,	9,	15,	9,	17,	4],
+[2,	14,	12,	9,	9,	12,	9,	12,	12,	12,	9,	9,	12,	17,	4],
+[2,	15,	9,	12,	12,	12,	9,	9,	12,	12,	12,	9,	12,	15,	4],
+[6,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	7],
+];
+
 var ROWS = map.length;
 var COLS = map[0].length;
+
 var ROWSAREA1 = mapArea1.length;
 var COLSAREA1 = mapArea1[0].length;
+
 var ROWSAREA2 = mapArea2.length;
 var COLSAREA2 = mapArea2[0].length;
+
+var ROWSBOSS = mapAreaBoss.length;
+var COLSBOSS = mapAreaBoss[0].length;
+
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
@@ -384,18 +419,28 @@ createMap();
 
 var fps = 60;
 var updateInterval;
+
 inventory.push(axePickup);
+
 function update()
 {
 if (mainMenuOpen || optMenuOpen || controlsMenuOpen) {
 		mus_Menu.play();
 		mus_Game.pause();
+		sfx_Boss_Flower.pause();
+		sfx_Boomerang.pause();
+		sfx_Enemy_Mushroom.pause();
+		mus_Boss_Flower.pause();
 		
 		renderMenu();
 	}
 	else {
 		mus_Menu.pause();
-		mus_Game.play();
+		if (area == 0 || area == 1)
+			mus_Game.play();
+		
+		else if (area == 3)
+			mus_Boss_Flower.play();
 		
 		if (!pauseMenuOpen) {
 			render();
@@ -428,6 +473,12 @@ function createMap()
 		images2[i] = new Image();
 		images2[i].src = "img/Zone2/"+imgStr2[i]+".png";
 	}	
+	for(var i = 0; i < imgStr3.length; i++)
+	{
+		images3[i] = new Image();
+		images3[i].src = "img/ZoneBoss/"+imgStr3[i]+".png";
+	}
+	
 	for (var row = 0; row < ROWS; row++)
 	{	
 		for (var col = 0; col < COLS; col++)
@@ -501,6 +552,12 @@ function createMap()
 			{
 				warpZone0.push(tile);
 			}
+			
+			else if (mapArea1[row][col] == 151)
+			{
+				warpZoneBoss.push(tile);
+			}
+			
 			mapArea1[row][col] = tile;		
 		}
 	}
@@ -534,6 +591,28 @@ function createMap()
 		}
 	}
 
+	for (var row = 0; row < ROWSBOSS; row++)
+	{	
+		for (var col = 0; col < COLSBOSS; col++)
+		{
+			var tile = {};
+			tile.x = 64*col;
+			tile.y = 64*row;
+			tile.img = images3[mapAreaBoss[row][col]];
+			if (mapAreaBoss[row][col] == 1 || mapAreaBoss[row][col] == 2 || mapAreaBoss[row][col] == 3 || mapAreaBoss[row][col] == 4 || 
+				mapAreaBoss[row][col] == 5 || mapAreaBoss[row][col] == 6 || mapAreaBoss[row][col] == 7 || mapAreaBoss[row][col] == 8 || 
+				mapAreaBoss[row][col] == 10 || mapAreaBoss[row][col] == 15 || mapAreaBoss[row][col] == 16) 
+			{
+				mapCollidableBoss.push(tile);
+			}
+			if (mapAreaBoss[row][col] == 13)
+			{
+				warpZoneBoss.push(tile);
+			}
+			mapAreaBoss[row][col] = tile;		
+		}
+	}
+	
 	updateInterval = setInterval(update, 1000/fps);
 }
 
@@ -778,7 +857,7 @@ function enemyMovement()
 		{
 			enemyStump.dir = 2;
 		}		
-		aud_Monster.play();
+		sfx_Enemy_Mushroom.play();
 		enemyStump.idle = false;
 		enemyStump.x += enemyStump.speedX;
 		enemyStump.y += enemyStump.speedY;
@@ -830,8 +909,14 @@ function checkCollision()
 	{
 		player.x = oldPosition.x;
 		player.y = oldPosition.y;
-	}	
-
+	}
+	
+	if (player.x + player.xSize - 8 > tree_Boss.x && player.x < tree_Boss.x + 56 && player.y + player.ySize > tree_Boss.y && player.y < tree_Boss.y + 32 && tree_Boss.used == false)
+	{
+		player.x = oldPosition.x;
+		player.y = oldPosition.y;
+	}
+	
 	if (player.x + player.xSize - 8 > sign.x - 32 && player.x < sign.x + 88 && player.y + player.ySize > sign.y - 32 && player.y < sign.y + 66)
 	{
 		if (player.x + player.xSize - 8 > sign.x && player.x < sign.x + 56 && player.y + player.ySize > sign.y && player.y < sign.y + 32)
@@ -927,7 +1012,27 @@ function checkCollision()
 			}
 		}
 	}
-
+	
+	if (area == 3) 
+	{
+		for (var ctr = 0; ctr < mapCollidableBoss.length; ctr++) 
+		{
+			if (player.x + player.xSize - 8 > mapCollidableBoss[ctr].x && player.x < mapCollidableBoss[ctr].x + 56 && player.y + player.ySize > mapCollidableBoss[ctr].y && player.y < mapCollidableBoss[ctr].y + 32) 
+			{
+				player.x = oldPosition.x;
+				player.y = oldPosition.y;
+			}
+		}
+		for (var ctr = 0; ctr < mapCollidableBoss.length; ctr++) 
+		{
+			if (boss_Flower.x + boss_Flower.size > mapCollidableBoss[ctr].x && boss_Flower.x < mapCollidableBoss[ctr].x + 64 && boss_Flower.y + boss_Flower.size > mapCollidableBoss[ctr].y && boss_Flower.y < mapCollidableBoss[ctr].y + 64) 
+			{
+				boss_Flower.x = boss_Flower.oldPosX;
+				boss_Flower.y = boss_Flower.oldPosY;
+			}
+		}
+	}
+	
 	for (var ctr = 0; ctr < warpZone0.length; ctr++) 
 	{
 		if (player.x + player.xSize - 8 > warpZone0[ctr].x && player.x < warpZone0[ctr].x + 56 && player.y + player.ySize > warpZone0[ctr].y && player.y < warpZone0[ctr].y + 32) 
@@ -973,6 +1078,22 @@ function checkCollision()
 		}
 	}
 	
+	for (var ctr = 0; ctr < warpZoneBoss.length; ctr++) 
+	{
+		if (player.x + player.xSize - 8 > warpZoneBoss[ctr].x && player.x < warpZoneBoss[ctr].x + 56 && player.y + player.ySize > warpZoneBoss[ctr].y && player.y < warpZoneBoss[ctr].y + 32) 
+		{
+			if (area == 1)
+			{
+				area = 3;
+				player.x = 460;
+				player.y = 64;
+				mus_Game.pause();
+				sfx_Boss_Flower.play();
+				mus_Boss_Flower.play();
+			}
+		}
+	}
+		
 	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
 	{
 		sfx_Boomerang.pause();
@@ -1001,7 +1122,7 @@ function checkCollision()
 
 	if (boomerang.x + boomerang.size > enemyStump.x + 20 && boomerang.x < enemyStump.x + 28 && boomerang.y + boomerang.size > enemyStump.y + 28 && boomerang.y < enemyStump.y + 50 && boomerang.thrown == true && enemyStump.stun == false)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 		boomerang.timeThrown = 1;
 		enemyStump.stun = true;
 		timeStunned = setInterval(stunTimer, 1000);
@@ -1010,7 +1131,7 @@ function checkCollision()
 
 	if (player.x + weapon.dirX + weapon.xSize > enemyStump.x + 20 && player.x + weapon.dirX < enemyStump.x + 28 && player.y + weapon.dirY + weapon.ySize > enemyStump.y + 28 && player.y + weapon.dirY < enemyStump.y + 50 && weapon.attack == true)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 		enemyStump.dead = true;
 		console.log("Weapon Hit Enemy");
 	}
@@ -1026,6 +1147,16 @@ function checkCollision()
 		console.log("Axe Hit Tree");
 	}
 
+	if (player.x + weapon.dirX + weapon.xSize > tree_Boss.x && player.x + weapon.dirX < tree_Boss.x + 64 && player.y + weapon.dirY + weapon.ySize > tree_Boss.y && player.y + weapon.dirY < tree_Boss.y + 64 && weapon.attack == true)
+	{
+		if (!tree_Boss.used) 
+		{
+			sfx_Swing_Hit.play(); 
+			tree_Boss.used = true;
+		}
+		console.log("Axe Hit Tree");
+	}
+	
 
 	oldPosition.x = player.x;
 	oldPosition.y = player.y;
@@ -1033,6 +1164,8 @@ function checkCollision()
 	enemyOldPosition.y = enemy.y;
 	enemyStump.oldPosX = enemyStump.x;
 	enemyStump.oldPosY = enemyStump.y;
+	boss_Flower.oldPosX = boss_Flower.x;
+	boss_Flower.oldPosY = boss_Flower.y;
 }
 
 function animate()
@@ -1089,7 +1222,8 @@ function animate()
 	}
 }
 
-function openCraftMenu() {
+function openCraftMenu()
+{
 	if (!mainMenuOpen) {
 		craftInvOpen = !craftInvOpen;
 
@@ -1102,8 +1236,9 @@ function openCraftMenu() {
 	}
 }
 
-function openPauseMenu() {
-	if (!mainMenuOpen) {
+function openPauseMenu()
+{
+	if (!mainMenuOpen && !optMenuOpen && !controlsMenuOpen) {
 		pauseMenuOpen = !pauseMenuOpen;
 
 		if (pauseMenuOpen)  {
@@ -1149,7 +1284,8 @@ function openPauseMenu() {
 	}
 }
 
-function openRestartMenu() {
+function openRestartMenu()
+{
 	
 	restartMenuOpen = true;
 	elemRestart.style.visibility = "visible";
@@ -1161,7 +1297,6 @@ function openRestartMenu() {
 	
 	if (lang == "EN") {		
 		canvasRestart.font = "bold 30px Arial";
-		canvasRestart.fillText("You Died!!! ", (elemRestart.width/2), 40);
 		canvasRestart.fillText("Would You Like To Restart?", (elemRestart.width/2), 68);
 		
 		canvasRestart.font = "bold 36px Arial";
@@ -1171,7 +1306,6 @@ function openRestartMenu() {
 	}
 	else if (lang == "FR") {
 		canvasRestart.font = "bold 30px Arial";
-		canvasRestart.fillText("Tu es Mort!!! ", (elemRestart.width/2), 40);
 		canvasRestart.fillText("Voulez-vous Redémarrer?", (elemRestart.width/2), 68);
 		
 		canvasRestart.font = "bold 36px Arial";
@@ -1182,7 +1316,8 @@ function openRestartMenu() {
 	document.getElementById("endGame").style.visibility = "visible";
 }
 
-function clickItem(event) {
+function clickItem(event)
+{
 	
 	var mousePos = { 
 		x: event.pageX,
@@ -1243,7 +1378,8 @@ function clickItem(event) {
 	}
 }
 
-function isIntersect(point, elem) {
+function isIntersect(point, elem)
+{
 	if (point.x > elem.offsetLeft && point.x < elem.offsetLeft + elem.width && point.y > elem.offsetTop && point.y < elem.offsetTop + elem.height) {
 		
 		return true;
@@ -1252,7 +1388,8 @@ function isIntersect(point, elem) {
 		return false;
 }
 
-function craftItem(item1, item2) {
+function craftItem(item1, item2)
+{
 	if (item1 == stickPickup && item2 == rockPickup) {
 		craftInv.push(axePickup);
 	}
@@ -1428,6 +1565,7 @@ function onKeyDown(event)
 			interactWith();
 			break;
 		case 32: // Space Bar
+			console.log(player.x + ", " + player.y);
 			meleeAttack();
 			break;
 		case 81: // Q
@@ -1491,7 +1629,8 @@ function movePlayer()
 		player.frame = 0;
 }
 
-function playerDead() {
+function playerDead()
+{
 	sfx_Enemy_Mushroom.pause();
 	sfx_Death.play();
 	sfx_Enemy_Mushroom.loop = false;
@@ -1520,13 +1659,15 @@ function endGameTimer()
 			gameOver();
 	}	
 }
+
 function gameOver() 
 {
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
-	mus_Game.pause();	
+	mus_Game.pause();
+	mus_Boss_Flower.pause();
 	
-	if (enemy.dead == true) {
+	if (boss_Flower.dead == true) {
 		mus_Win.play();
 		if (lang == "EN")
 			document.getElementById("endGame").innerHTML = "You Defeated The Enemy! You Win!";
@@ -1587,6 +1728,13 @@ function render()
 			surface.drawImage(rockPickup.image, rockPickup.x, rockPickup.y);
 	}
 
+	else if (area == 3) {
+		for (var row = 0; row < ROWSBOSS; row++) {
+			for ( var col = 0; col < COLSBOSS; col++)
+				surface.drawImage(mapAreaBoss[row][col].img,mapAreaBoss[row][col].x,mapAreaBoss[row][col].y, 64, 64);
+		}
+	}
+	
 	for (var ctr = 0; ctr < inventory.length; ctr++) {
 		inventory[ctr].x = ctr * 64;
 		inventory[ctr].y = 0;
@@ -1607,9 +1755,12 @@ function render()
 	if (!inventory.includes(foodPickup) || craftInv.includes(foodPickup))
 		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
 		
-	if (!tree.used)
+	if (!tree.used && area == 0)
 		surface.drawImage(tree.image, tree.x, tree.y);
-
+	
+	if (!tree_Boss.used && area == 1)
+		surface.drawImage(tree_Boss.image, tree_Boss.x, tree_Boss.y);
+	
 	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
 	
 	if (boomerang.thrown == true)
@@ -1632,7 +1783,7 @@ function render()
 	for (var ctr = 0; ctr < playerHealth; ctr++)
 		canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);
 	
-	if (!boss_Flower.dead) {
+	if (!boss_Flower.dead && area == 3) {
 		surface.drawImage(boss_Flower.image, boss_Flower.frame*48, boss_Flower.dir*64, 48, 64, boss_Flower.x, boss_Flower.y, 96, 96);
 		surface.drawImage(boss_Flower_Seed_1.image, boss_Flower_Seed_1.x, boss_Flower_Seed_1.y, 32, 32);
 		surface.drawImage(boss_Flower_Seed_2.image, boss_Flower_Seed_2.x, boss_Flower_Seed_2.y, 32, 32);
