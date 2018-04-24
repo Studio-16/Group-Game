@@ -21,19 +21,28 @@ var mapSizeX = 5760;
 var mapSizeY = 5760;
 var area = 0;
 
-var player = {x:1544, y:1404, idle:true, frame:0, dir:2, speed:1, xSize:48, ySize:64}
+var player = {x:1544, y:1404, idle:true, attackable: true, flash: false, frame:0, dir:2, speed:1, xSize:48, ySize:64}
 player.image = new Image();
 player.image.src = "img/characterSheet.png";
 var oldPosition = {x:player.x, y:player.y};
 
-var enemy = {speed:.5, x:2184, y:1146, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, dead:false, stunTime:0, size:32}
+var enemy = {speed:.5, x:5000, y:2070, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, dead:false, stunTime:0, flash:false, health:2, size:32}
 enemy.image = new Image();
 enemy.image.src = "img/enemy.png";
 var enemyOldPosition = {x:enemy.x, y:enemy.y};
 
-var enemyStump = {speed:.5, x:3605, y:2098, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:2, currentFrame:0, maxFrames:60, stun:false, dead:false, stunTime:0, idle:true, oldPosX:0, oldPosY:0, size:32}
+var enemy1 = {speed:.5, x:4165, y:483, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, stun:false, dead:false, stunTime:0, flash:false, health:2, size:32}
+enemy1.image = new Image();
+enemy1.image.src = "img/enemy.png";
+
+var enemyStump = {speed:.5, x:3605, y:2098, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:2, currentFrame:0, maxFrames:60, stun:false, flash:false, dead:false, health:3, stunTime:0, idle:true, oldPosX:0, oldPosY:0, size:32}
 enemyStump.image = new Image();
 enemyStump.image.src = "img/enemyStump.png";
+
+var enemyStump1 = {speed:.5, x:3176, y:1319, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, frame:0, dir:2, currentFrame:0, maxFrames:60, stun:false, flash:false, dead:false, health:3, stunTime:0, idle:true, oldPosX:0, oldPosY:0, size:32}
+enemyStump1.image = new Image();
+enemyStump1.image.src = "img/enemyStump.png";
+
 
 var boomerang = {speed:1.5, x:0, y:0, dx:0, dy:0, angle:0, distance:0, xSpeed:0, ySpeed:0, thrown:false, timeThrown:0, frame:0, currentFrame:0, maxFrames:15, size:32}
 boomerang.image = new Image();
@@ -51,25 +60,53 @@ var tree = {x: 1408, y:1476, width:64, height:64, used:false}
 tree.image = new Image();
 tree.image.src = "img/treeSingle.png";
 
+var tree_Boss = {x: 580, y:1396, width:64, height:64, used:false}
+tree_Boss.image = new Image();
+tree_Boss.image.src = "img/treeSingle.png";
+
 var sign = {x:1280, y:1280, width:64, height:64}
 sign.image = new Image();
 sign.image.src = "img/sign.png";
 
-var stickPickup = {x:456, y:128, width:64, height:64, used:false}
+var stickPickup = {x:2054, y:1100, width:64, height:64, used:false}
 stickPickup.image = new Image();
 stickPickup.image.src = "img/stick.png";
 
-var rockPickup = {x:456, y:768, width:64, height:64, used:false}
+var rockPickup = {x:2183, y:1100, width:64, height:64, used:false}
 rockPickup.image = new Image();
 rockPickup.image.src = "img/rock.png";
+
+var flintPickup = {x:456, y:128, width:64, height:64, used:false}
+flintPickup.image = new Image();
+flintPickup.image.src = "img/flint.png";
+
+var rodPickup = {x:0, y:0, width:64, height:64, used:false}
+rodPickup.image = new Image();
+rodPickup.image.src = "img/rod.png";
+
+var vinePickup = {x:500, y:1000, width:64, height:64, used:false}
+vinePickup.image = new Image();
+vinePickup.image.src = "img/vine.png";
+
+var cookedPickup = {x:0, y:0, width:64, height:64, used:false}
+cookedPickup.image = new Image();
+cookedPickup.image.src = "img/cooked.png";
+
+var firePickup = {x:0, y:0, width:64, height:64, used:false}
+firePickup.image = new Image();
+firePickup.image.src = "img/fire.png";
+
+var hidePickup = {x:1860, y:1100, width:64, height:64, used:false}
+hidePickup.image = new Image();
+hidePickup.image.src = "img/hide.png";
 
 var axePickup = {x:0, y:0, width:64, height:64, used:false}
 axePickup.image = new Image();
 axePickup.image.src = "img/axe.png";
 
-var logPickup = {x:0, y:0, width:64, height:64, used:false}
+var logPickup = {x:4000, y:1000, width:64, height:64, used:false}
 logPickup.image = new Image();
-logPickup.image.src = "img/logs.png";
+logPickup.image.src = "img/logs.png"
 
 var crftPlus = {}
 crftPlus.image = new Image();
@@ -93,9 +130,10 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 
-var endTime = 180;
+var endTime = 360;
 var currentTime = 0;
 var endTimer;
+var enemyFlashTime;
 
 var inventory = [];
 var craftInv = [];
@@ -104,28 +142,16 @@ var mapFarm = [];
 var mapCollidable = [];
 var mapCollidableArea1 = [];
 var mapCollidableArea2 = [];
+var mapCollidableBoss = [];
+
 var warpZone0 = [];
 var warpZone1 = [];
 var warpZone2 = [];
-
-var aud_Music = new Audio ("audio/mus_Main.mp3");
-aud_Music.loop = true;
-aud_Music.volume = 0.25;
-	
-var aud_Death = new Audio ("audio/snd_Death.wav");
-aud_Death.volume = 0.5;
-
-var aud_Monster = new Audio("audio/snd_Monster.wav");
-aud_Monster.loop = true;
-aud_Monster.volume = 0.5;
-
-var aud_Win = new Audio ("audio/mus_Win.wav");
-aud_Win.volume = 0.5;
-
-var aud_Lose = new Audio("audio/mus_Lose.wav");
-aud_Lose.volume = 0.5;
+var warpZoneBoss = [];
 
 var textBoxOpen = false;
+	
+var rndNum;	
 	
 var imgStr = 	["floorM", "floorU", "floorD", "floorL", "floorR", "floorTopL", "floorTopR", "floorBotL", "floorBotR",
 /*Starts at 9*/  "floorHorL", "floorHorM", "floorHorR", "floorVertU", "floorVertM", "floorVertD", "floorDot",
@@ -147,16 +173,19 @@ var imgStr1 =   ["1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
 				 "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113",
 				 "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "127", "128",
 				 "129", "130", "131", "132", "133", "134", "135", "136", "137", "138", "139", "140", "141", "142", "143", "144",
-				 "145", "146", "147", "148", "149", "150"];
+				 "145", "146", "147", "148", "149", "150", "151"];
 
-var imgStr2 =   ["1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
+var imgStr2 =   ["1", "1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
 				 "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38",
 				 "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53",
-				 "54", "55", "56", "57", "58", "59", "60", "61"];				 
+				 "54", "55", "56", "57", "58", "59", "60", "61"];	
+
+var imgStr3 = ["1","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19"];			 
 
 var images = [];
 var images1 = [];
 var images2 = [];
+var images3 = [];
 
 var map =
 [
@@ -285,7 +314,7 @@ var mapArea1 =
 	[145, 124, 126, 23, 34, 43, 5, 140, 6, 12, 23, 142, 8, 16, 37, 7, 128, 124, 124, 124, 124, 124, 124, 124, 125, 4, 15, 4, 4, 4, 14, 7, 6, 9, 6, 9, 6, 6, 5, 4, 4, 36, 4, 50, 5, 5, 5, 5, 9, 9, 7, 1, 131, 124, 124, 125, 73, 74, 85, 86, 74, 74, 74, 74, 74, 87, 75, 40, 7, 4, 4, 2, 2, 2, 2, 2, 41, 10, 10, 7, 3, 3, 3, 3, 3, 4, 26, 127, 124, 124], 
 	[145, 124, 126, 35, 19, 35, 21, 140, 6, 9, 4, 142, 39, 6, 37, 34, 128, 124, 124, 124, 124, 124, 124, 124, 125, 4, 4, 40, 4, 15, 11, 6, 9, 6, 11, 15, 6, 36, 41, 4, 148, 149, 8, 40, 8, 8, 4, 4, 5, 9, 9, 7, 37, 131, 124, 125, 81, 70, 93, 70, 82, 82, 82, 82, 70, 95, 83, 8, 2, 2, 33, 6, 31, 32, 2, 2, 3, 3, 10, 25, 26, 3, 3, 41, 3, 4, 4, 127, 124, 124], 
 	[145, 124, 126, 36, 26, 31, 32, 140, 21, 9, 21, 142, 29, 30, 2, 16, 127, 131, 124, 124, 124, 124, 124, 124, 125, 4, 52, 53, 7, 7, 9, 9, 5, 5, 5, 5, 40, 42, 4, 4, 73, 75, 7, 8, 31, 32, 8, 4, 4, 5, 13, 7, 4, 5, 123, 125, 89, 90, 90, 80, 90, 78, 79, 90, 78, 90, 91, 2, 41, 2, 2, 20, 6, 6, 2, 34, 2, 3, 10, 3, 3, 3, 5, 5, 34, 4, 4, 127, 124, 124], 
-	[145, 124, 126, 20, 143, 139, 139, 139, 139, 139, 139, 139, 139, 139, 138, 40, 7, 5, 124, 124, 124, 124, 124, 124, 125, 4, 4, 36, 14, 4, 7, 5, 5, 15, 5, 5, 5, 40, 4, 49, 81, 83, 7, 4, 40, 4, 4, 18, 4, 4, 2, 9, 4, 5, 123, 125, 6, 44, 45, 4, 4, 4, 4, 4, 4, 25, 137, 2, 2, 2, 2, 41, 2, 6, 6, 6, 13, 3, 10, 3, 3, 49, 3, 5, 5, 25, 4, 127, 124, 124], 
+	[145, 124, 126, 20, 143, 139, 139, 139, 139, 151, 139, 139, 139, 139, 138, 40, 7, 5, 124, 124, 124, 124, 124, 124, 125, 4, 4, 36, 14, 4, 7, 5, 5, 15, 5, 5, 5, 40, 4, 49, 81, 83, 7, 4, 40, 4, 4, 18, 4, 4, 2, 9, 4, 5, 123, 125, 6, 44, 45, 4, 4, 4, 4, 4, 4, 25, 137, 2, 2, 2, 2, 41, 2, 6, 6, 6, 13, 3, 10, 3, 3, 49, 3, 5, 5, 25, 4, 127, 124, 124], 
 	[145, 124, 126, 49, 140, 143, 139, 139, 139, 139, 139, 139, 139, 138, 142, 8, 15, 3, 124, 124, 124, 124, 124, 124, 124, 134, 1, 4, 4, 44, 45, 5, 17, 5, 5, 37, 140, 4, 4, 4, 89, 91, 4, 4, 4, 44, 45, 4, 6, 34, 4, 9, 127, 115, 124, 125, 4, 34, 16, 4, 4, 4, 4, 49, 15, 15, 25, 35, 4, 2, 2, 2, 2, 2, 2, 2, 2, 16, 10, 10, 3, 3, 14, 143, 138, 8, 7, 115, 124, 124], 
 	[145, 124, 126, 66, 140, 140, 143, 139, 139, 139, 139, 139, 138, 142, 142, 8, 13, 3, 124, 124, 124, 124, 124, 124, 124, 124, 117, 1, 4, 4, 7, 52, 53, 143, 139, 139, 8, 139, 138, 8, 31, 32, 4, 4, 4, 17, 144, 8, 138, 8, 13, 4, 115, 124, 124, 133, 2, 12, 12, 12, 12, 12, 2, 12, 12, 2, 6, 25, 36, 4, 4, 15, 17, 10, 10, 2, 2, 2, 2, 10, 2, 2, 3, 144, 137, 115, 116, 124, 124, 124], 
 	[145, 124, 126, 41, 140, 140, 140, 143, 139, 139, 139, 138, 142, 142, 142, 8, 7, 5, 124, 124, 124, 124, 124, 124, 124, 124, 124, 116, 117, 1, 4, 4, 4, 144, 141, 141, 141, 141, 137, 40, 7, 6, 6, 42, 6, 6, 6, 144, 137, 8, 130, 122, 122, 122, 122, 130, 12, 15, 4, 27, 28, 6, 6, 7, 7, 2, 11, 11, 9, 9, 9, 9, 9, 6, 16, 11, 11, 11, 11, 11, 13, 14, 13, 4, 128, 124, 124, 124, 124, 124], 
@@ -298,7 +327,7 @@ var mapArea1 =
 	[145, 124, 126, 1, 1, 6, 41, 14, 9, 1, 1, 1, 15, 6, 1, 6, 128, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 126, 21, 144, 141, 141, 141, 141, 137, 8, 7, 13, 127, 15, 9, 4, 11, 11, 11, 11, 11, 11, 11, 11, 4, 127, 17, 127, 127, 17, 22, 81, 82, 103, 104, 82, 82, 82, 83, 8, 49, 5, 5, 4, 4, 11, 16, 5, 5, 5, 5, 49, 144, 137, 7, 128, 124, 124], 
 	[145, 124, 134, 1, 4, 35, 13, 13, 41, 6, 9, 6, 1, 1, 1, 1, 128, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 126, 51, 21, 42, 31, 32, 34, 35, 4, 13, 9, 9, 4, 4, 49, 143, 138, 40, 7, 127, 127, 127, 4, 38, 16, 16, 6, 127, 44, 45, 89, 90, 111, 112, 90, 80, 90, 91, 22, 22, 11, 16, 4, 22, 22, 22, 52, 53, 5, 21, 5, 66, 17, 5, 128, 124, 124], 
 	[145, 124, 124, 134, 1, 1, 1, 1, 1, 1, 6, 6, 1, 1, 1, 1, 136, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 121, 122, 122, 122, 122, 122, 130, 33, 127, 35, 17, 16, 13, 4, 22, 22, 127, 13, 39, 127, 143, 38, 137, 7, 17, 127, 18, 43, 127, 127, 127, 11, 11, 11, 4, 22, 22, 11, 11, 14, 14, 11, 11, 22, 15, 22, 22, 5, 5, 5, 5, 42, 43, 5, 5, 5, 5, 5, 18, 5, 128, 124, 124], 
-	[145, 124, 124, 124, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 134, 135, 135, 135, 135, 135, 135, 135, 135, 114, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124], 
+	[145, 124, 124, 124, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 134, 135, 135, 135, 135, 135, 135, 135, 135, 122, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 135, 136, 124, 124], 
 	[145, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 122, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124],
 	[145, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 150, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124, 124],
 ];
@@ -357,12 +386,37 @@ var mapArea2 =
 	[53, 53, 41, 21, 21, 21, 21, 41, 53, 53, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55, 54, 55],       
 ];
 
+var mapAreaBoss = 
+[
+[5,	1,	10,	1,	1,	10,	1,	1,	1,	10,	1,	1,	10,	1,	8],
+[2,	15,	18,	18,	19,	19,	18,	19,	18,	19,	19,	18,	18,	15,	4],
+[2,	14,	12,	12,	12,	12,	12,	12,	12,	12,	12,	12,	12,	17,	4],
+[2,	14,	12,	15,	12,	12,	12,	9,	12,	12,	12,	15,	9,	17,	4],
+[2,	14,	12,	12,	12,	12,	12,	12,	12,	12,	9,	9,	9,	17,	4],
+[2,	14,	12,	12,	12,	9,	9,	12,	9,	9,	9,	9,	9,	17,	4],
+[2,	14,	9,	9,	9,	9,	9,	12,	12,	9,	9,	9,	9,	17,	4],
+[2,	14,	9,	9,	9,	9,	9,	12,	9,	12,	12,	9,	9,	17,	4],
+[2,	14,	9,	12,	12,	12,	9,	9,	9,	9,	12,	9,	9,	17,	4],
+[2,	14,	12,	9,	9,	9,	12,	9,	9,	9,	9,	9,	9,	17,	4],
+[2,	14,	12,	9,	9,	9,	9,	9,	9,	9,	9,	9,	9,	17,	4],
+[2,	14,	12,	15,	9,	9,	9,	9,	12,	12,	9,	15,	9,	17,	4],
+[2,	14,	12,	9,	9,	12,	9,	12,	12,	12,	9,	9,	12,	17,	4],
+[2,	15,	9,	12,	12,	12,	9,	9,	12,	12,	12,	9,	12,	15,	4],
+[6,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	3,	7],
+];
+
 var ROWS = map.length;
 var COLS = map[0].length;
+
 var ROWSAREA1 = mapArea1.length;
 var COLSAREA1 = mapArea1[0].length;
+
 var ROWSAREA2 = mapArea2.length;
 var COLSAREA2 = mapArea2[0].length;
+
+var ROWSBOSS = mapAreaBoss.length;
+var COLSBOSS = mapAreaBoss[0].length;
+
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
@@ -373,17 +427,29 @@ canvas.addEventListener("mousedown", boomerangAttack);
 
 createMap();
 
-aud_Music.play();
-
 var fps = 60;
 var updateInterval;
 
 function update()
 {
-	if (mainMenuOpen || optMenuOpen)
+if (mainMenuOpen || optMenuOpen || controlsMenuOpen) {
+		mus_Menu.play();
+		mus_Game.pause();
+		sfx_Boss_Flower.pause();
+		sfx_Boomerang.pause();
+		sfx_Enemy_Mushroom.pause();
+		mus_Boss_Flower.pause();
+		
 		renderMenu();
-	
+	}
 	else {
+		mus_Menu.pause();
+		if (area == 0 || area == 1)
+			mus_Game.play();
+		
+		else if (area == 3)
+			mus_Boss_Flower.play();
+		
 		if (!pauseMenuOpen) {
 			render();
 			movePlayer();
@@ -391,8 +457,9 @@ function update()
 			checkCollision();
 			objectMovement();
 			enemyMovement();
-			console.log("X:"+player.x);
-			console.log("Y:"+player.y);
+			boss_Animate();
+			boss_Movement();
+			boss_Collision();
 		}
 	}
 }
@@ -414,6 +481,12 @@ function createMap()
 		images2[i] = new Image();
 		images2[i].src = "img/Zone2/"+imgStr2[i]+".png";
 	}	
+	for(var i = 0; i < imgStr3.length; i++)
+	{
+		images3[i] = new Image();
+		images3[i].src = "img/ZoneBoss/"+imgStr3[i]+".png";
+	}
+	
 	for (var row = 0; row < ROWS; row++)
 	{	
 		for (var col = 0; col < COLS; col++)
@@ -487,6 +560,12 @@ function createMap()
 			{
 				warpZone0.push(tile);
 			}
+			
+			else if (mapArea1[row][col] == 151)
+			{
+				warpZoneBoss.push(tile);
+			}
+			
 			mapArea1[row][col] = tile;		
 		}
 	}
@@ -520,6 +599,28 @@ function createMap()
 		}
 	}
 
+	for (var row = 0; row < ROWSBOSS; row++)
+	{	
+		for (var col = 0; col < COLSBOSS; col++)
+		{
+			var tile = {};
+			tile.x = 64*col;
+			tile.y = 64*row;
+			tile.img = images3[mapAreaBoss[row][col]];
+			if (mapAreaBoss[row][col] == 1 || mapAreaBoss[row][col] == 2 || mapAreaBoss[row][col] == 3 || mapAreaBoss[row][col] == 4 || 
+				mapAreaBoss[row][col] == 5 || mapAreaBoss[row][col] == 6 || mapAreaBoss[row][col] == 7 || mapAreaBoss[row][col] == 8 || 
+				mapAreaBoss[row][col] == 10 || mapAreaBoss[row][col] == 15 || mapAreaBoss[row][col] == 16) 
+			{
+				mapCollidableBoss.push(tile);
+			}
+			if (mapAreaBoss[row][col] == 13)
+			{
+				warpZoneBoss.push(tile);
+			}
+			mapAreaBoss[row][col] = tile;		
+		}
+	}
+	
 	updateInterval = setInterval(update, 1000/fps);
 }
 
@@ -543,12 +644,15 @@ function stunTimer()
 {
 	enemy.stunTime++;
 	enemyStump.stunTime++;
-	if (enemy.stunTime > 2 || enemyStump.stunTime > 2)
+	boss_Flower.stunTime++;
+	if (enemy.stunTime > 2 || enemyStump.stunTime > 2 || boss_Flower.stunTime > 2)
 	{
 		enemy.stun = false;
 		enemy.stunTime = 0;
 		enemyStump.stun = false;
 		enemyStump.stunTime = 0;
+		boss_Flower.stun = false;
+		boss_Flower.stunTime = 0;
 		clearInterval(timeStunned);
 	}
 }
@@ -613,8 +717,19 @@ function meleeAttack()
 			weapon.dirX = -48;
 			weapon.dirY = -24; 
 		}	
+		
+		rndNum = Math.floor((Math.random() * 3) + 1);
+		
+		if (rndNum == 1) 
+			sfx_Swing_1.play();
+		
+		else if (rndNum == 2)
+			sfx_Swing_2.play();
+		
+		else if (rndNum == 3)
+			sfx_Swing_3.play();
+		
 		weapon.attack = true;
-		console.log("attack");
 	}	
 }
 
@@ -671,7 +786,7 @@ function interactWith()
 		else if (textBoxOpen == false) {
 			textBoxOpen = true
 			if (lang == "EN") 
-				document.getElementById("textBox").innerHTML = "Tip: Use logs to build a bridge here. First you'll need an axe!";
+				document.getElementById("textBox").innerHTML = "Tip: First you'll need an axe! Craft one using a stick and a rock.";
 			
 			else if (lang == "FR") 
 				document.getElementById("textBox").innerHTML = "Conseil: Utilisez les journaux pour construire un pont ici. D'abord, vous aurez besoin d'une hache!";
@@ -702,7 +817,10 @@ function objectMovement()
 	{
 		boomerang.x += boomerang.speedX;
 		boomerang.y += boomerang.speedY;
+		sfx_Boomerang.play();
 	}
+	else 
+		sfx_Boomerang.pause();
 }
 
 function enemyMovement()
@@ -715,12 +833,28 @@ function enemyMovement()
 	enemy.speedY = enemy.speed * (enemy.dy / enemy.distance);	
 	if (enemy.distance < 500 && enemy.stun == false && enemy.dead == false)
 	{
-		aud_Monster.play();
+		sfx_Enemy_Mushroom.play();
 		enemy.x += enemy.speedX;
 		enemy.y += enemy.speedY;
 	}
 	else {
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
+	}
+
+	enemy1.dx = player.x - enemy.x;
+	enemy1.dy = player.y - enemy.y;
+	enemy1.distance = Math.sqrt(enemy1.dx*enemy1.dx + enemy1.dy*enemy1.dy);
+	enemy1.angle = Math.atan2(enemy1.dy, enemy1.dx)* 180/Math.PI;
+	enemy1.speedX = enemy1.speed * (enemy1.dx / enemy1.distance);
+	enemy1.speedY = enemy1.speed * (enemy1.dy / enemy1.distance);	
+	if (enemy1.distance < 500 && enemy1.stun == false && enemy1.dead == false)
+	{
+		sfx_Enemy_Mushroom.play();
+		enemy1.x += enemy1.speedX;
+		enemy1.y += enemy1.speedY;
+	}
+	else {
+		sfx_Enemy_Mushroom.pause();
 	}
 
 	enemyStump.dx = player.x - enemyStump.x;
@@ -747,16 +881,53 @@ function enemyMovement()
 		{
 			enemyStump.dir = 2;
 		}		
-		aud_Monster.play();
+		sfx_Enemy_Mushroom.play();
 		enemyStump.idle = false;
 		enemyStump.x += enemyStump.speedX;
 		enemyStump.y += enemyStump.speedY;
 	}
-	else 
+
+	enemyStump1.dx = player.x - enemyStump1.x;
+	enemyStump1.dy = player.y - enemyStump1.y;
+	enemyStump1.distance = Math.sqrt(enemyStump1.dx*enemyStump1.dx + enemyStump1.dy*enemyStump1.dy);
+	enemyStump1.angle = Math.atan2(enemyStump1.dy, enemyStump1.dx)* 180/Math.PI;
+	enemyStump1.speedX = enemyStump1.speed * (enemyStump1.dx / enemyStump1.distance);
+	enemyStump1.speedY = enemyStump1.speed * (enemyStump1.dy / enemyStump1.distance);
+	if (enemyStump1.distance < 500 && enemyStump1.stun == false && enemyStump1.dead == false)
 	{
-		enemyStump.idle = true;
-		aud_Monster.pause();
+		if (Math.abs(enemyStump1.speedX) > Math.abs(enemyStump1.speedY) && enemyStump1.speedX > 0)
+		{
+			enemyStump1.dir = 1;
+		}
+		else if (Math.abs(enemyStump1.speedX) > Math.abs(enemyStump1.speedY) && enemyStump1.speedX < 0)
+		{
+			enemyStump1.dir = 3;
+		}
+		else if (Math.abs(enemyStump1.speedX) < Math.abs(enemyStump1.speedY) && enemyStump1.speedY > 0)
+		{
+			enemyStump1.dir = 0;
+		}
+		else if (Math.abs(enemyStump1.speedX) < Math.abs(enemyStump1.speedY) && enemyStump1.speedY < 0)
+		{
+			enemyStump1.dir = 2;
+		}		
+		sfx_Enemy_Mushroom.play();
+		enemyStump1.idle = false;
+		enemyStump1.x += enemyStump1.speedX;
+		enemyStump1.y += enemyStump1.speedY;
 	}
+}
+
+function enemyFlash()
+{
+	if(enemy.flash == true)
+		enemy.flash = !enemy.flash;
+	if(enemy1.flash == true)
+		enemy1.flash = !enemy1.flash;
+	if(enemyStump.flash == true)
+		enemyStump.flash = !enemyStump.flash;
+	if(enemyStump1.flash == true)
+		enemyStump1.flash = !enemyStump1.flash;
 }
 
 function checkCollision()
@@ -768,7 +939,31 @@ function checkCollision()
 				inventory.push(foodPickup);
 	}
 
-	if (player.x + player.xSize > stickPickup.x && player.x < stickPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < stickPickup.y + 64 && area == 1)
+	if (player.x + player.xSize > flintPickup.x && player.x < flintPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < flintPickup.y + 64 && area == 1)
+	{
+		if (!flintPickup.used) {
+				inventory.push(flintPickup);
+				flintPickup.used = true;
+			}
+	}	
+	
+	if (player.x + player.xSize > vinePickup.x && player.x < vinePickup.x + 64 && player.y + player.ySize > vinePickup.y && player.y < vinePickup.y + 64 && area == 1)
+	{
+		if (!vinePickup.used) {
+				inventory.push(vinePickup);
+				vinePickup.used = true;
+			}
+	}	
+
+	if (player.x + player.xSize > rockPickup.x && player.x < rockPickup.x + 64 && player.y + player.ySize > rockPickup.y && player.y < rockPickup.y + 64 && area == 0)
+	{
+		if (!rockPickup.used) {
+				inventory.push(rockPickup);
+				rockPickup.used = true;
+			}
+	}	
+	
+	if (player.x + player.xSize > stickPickup.x && player.x < stickPickup.x + 64 && player.y + player.ySize > stickPickup.y && player.y < stickPickup.y + 64 && area == 0)
 	{
 		if (!stickPickup.used) {
 				inventory.push(stickPickup);
@@ -776,20 +971,18 @@ function checkCollision()
 			}
 	}	
 
-	if (player.x + player.xSize > rockPickup.x && player.x < rockPickup.x + 64 && player.y + player.ySize > rockPickup.y && player.y < rockPickup.y + 64 && area == 2)
-	{
-		if (!rockPickup.used) {
-				inventory.push(rockPickup);
-				rockPickup.used = true;
-			}
-	}
-
 	if (player.x + player.xSize - 8 > tree.x && player.x < tree.x + 56 && player.y + player.ySize > tree.y && player.y < tree.y + 32 && tree.used == false)
 	{
 		player.x = oldPosition.x;
 		player.y = oldPosition.y;
-	}	
-
+	}
+	
+	if (player.x + player.xSize - 8 > tree_Boss.x && player.x < tree_Boss.x + 56 && player.y + player.ySize > tree_Boss.y && player.y < tree_Boss.y + 32 && tree_Boss.used == false)
+	{
+		player.x = oldPosition.x;
+		player.y = oldPosition.y;
+	}
+	
 	if (player.x + player.xSize - 8 > sign.x - 32 && player.x < sign.x + 88 && player.y + player.ySize > sign.y - 32 && player.y < sign.y + 66)
 	{
 		if (player.x + player.xSize - 8 > sign.x && player.x < sign.x + 56 && player.y + player.ySize > sign.y && player.y < sign.y + 32)
@@ -814,8 +1007,9 @@ function checkCollision()
 		}		
 	}
 
-	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50 && enemy.dead == false && area == 2)
+	if (player.x + player.xSize > enemy.x + 20 && player.x < enemy.x + 28 && player.y + player.ySize > enemy.y + 28 && player.y < enemy.y + 50 && enemy.dead == false && area == 1)
 	{	
+		sfx_Hurt.play();
 		playerHealth--;
 		player.x += enemy.speedX*200;
 		player.y += enemy.speedY*200;
@@ -884,7 +1078,27 @@ function checkCollision()
 			}
 		}
 	}
-
+	
+	if (area == 3) 
+	{
+		for (var ctr = 0; ctr < mapCollidableBoss.length; ctr++) 
+		{
+			if (player.x + player.xSize - 8 > mapCollidableBoss[ctr].x && player.x < mapCollidableBoss[ctr].x + 56 && player.y + player.ySize > mapCollidableBoss[ctr].y && player.y < mapCollidableBoss[ctr].y + 32) 
+			{
+				player.x = oldPosition.x;
+				player.y = oldPosition.y;
+			}
+		}
+		for (var ctr = 0; ctr < mapCollidableBoss.length; ctr++) 
+		{
+			if (boss_Flower.x + boss_Flower.size > mapCollidableBoss[ctr].x && boss_Flower.x < mapCollidableBoss[ctr].x + 64 && boss_Flower.y + boss_Flower.size > mapCollidableBoss[ctr].y && boss_Flower.y < mapCollidableBoss[ctr].y + 64) 
+			{
+				boss_Flower.x = boss_Flower.oldPosX;
+				boss_Flower.y = boss_Flower.oldPosY;
+			}
+		}
+	}
+	
 	for (var ctr = 0; ctr < warpZone0.length; ctr++) 
 	{
 		if (player.x + player.xSize - 8 > warpZone0[ctr].x && player.x < warpZone0[ctr].x + 56 && player.y + player.ySize > warpZone0[ctr].y && player.y < warpZone0[ctr].y + 32) 
@@ -930,8 +1144,25 @@ function checkCollision()
 		}
 	}
 	
+	for (var ctr = 0; ctr < warpZoneBoss.length; ctr++) 
+	{
+		if (player.x + player.xSize - 8 > warpZoneBoss[ctr].x && player.x < warpZoneBoss[ctr].x + 56 && player.y + player.ySize > warpZoneBoss[ctr].y && player.y < warpZoneBoss[ctr].y + 32) 
+		{
+			if (area == 1)
+			{
+				area = 3;
+				player.x = 460;
+				player.y = 64;
+				mus_Game.pause();
+				sfx_Boss_Flower.play();
+				mus_Boss_Flower.play();
+			}
+		}
+	}
+		
 	if (player.x + player.xSize > boomerang.x && player.x < boomerang.x + boomerang.size && player.y + player.ySize > boomerang.y && player.y < boomerang.y + boomerang.size && boomerang.timeThrown > 0.2)
 	{
+		sfx_Boomerang.pause();
 		boomerang.thrown = false;
 		clearInterval(boomerangTime);
 		boomerang.timeThrown = 0;
@@ -940,33 +1171,112 @@ function checkCollision()
 
 	if (boomerang.x + boomerang.size > enemy.x + 20 && boomerang.x < enemy.x + 28 && boomerang.y + boomerang.size > enemy.y + 28 && boomerang.y < enemy.y + 50 && boomerang.thrown == true && enemy.stun == false)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 		boomerang.timeThrown = 1;
 		enemy.stun = true;
 		timeStunned = setInterval(stunTimer, 1000);
 		console.log("Boomerang Hit Enemy");
 	}
 
-	if (player.x + weapon.dirX + weapon.xSize > enemy.x + 20 && player.x + weapon.dirX < enemy.x + 28 && player.y + weapon.dirY + weapon.ySize > enemy.y + 28 && player.y + weapon.dirY < enemy.y + 50 && weapon.attack == true)
+	if (player.x + weapon.dirX + weapon.xSize > enemy.x + 20 && player.x + weapon.dirX < enemy.x + 28 && player.y + weapon.dirY + weapon.ySize > enemy.y + 28 && player.y + weapon.dirY < enemy.y + 50 && weapon.attack == true && enemy.flash == false && enemy.dead == false)
 	{
-		aud_Monster.pause();
-		enemy.dead = true;
+		sfx_Enemy_Mushroom.pause();
+		sfx_Swing_Hit.play();
+		timeFlash = setInterval(enemyFlash, 500);
+		enemy.flash = true;
+		enemy.health--;
+		endFlash = setTimeout(function() {clearInterval(timeFlash);}, 1000);
+		if(enemy.health <= 0)
+			enemy.dead = true;
 		console.log("Weapon Hit Enemy");
 	}
 
 	if (boomerang.x + boomerang.size > enemyStump.x + 20 && boomerang.x < enemyStump.x + 28 && boomerang.y + boomerang.size > enemyStump.y + 28 && boomerang.y < enemyStump.y + 50 && boomerang.thrown == true && enemyStump.stun == false)
 	{
-		aud_Monster.pause();
+		sfx_Enemy_Mushroom.pause();
 		boomerang.timeThrown = 1;
 		enemyStump.stun = true;
 		timeStunned = setInterval(stunTimer, 1000);
 		console.log("Boomerang Hit Enemy");
 	}
 
-	if (player.x + weapon.dirX + weapon.xSize > enemyStump.x + 20 && player.x + weapon.dirX < enemyStump.x + 28 && player.y + weapon.dirY + weapon.ySize > enemyStump.y + 28 && player.y + weapon.dirY < enemyStump.y + 50 && weapon.attack == true)
+	if (player.x + weapon.dirX + weapon.xSize > enemyStump.x + 20 && player.x + weapon.dirX < enemyStump.x + 28 && player.y + weapon.dirY + weapon.ySize > enemyStump.y + 28 && player.y + weapon.dirY < enemyStump.y + 50 && weapon.attack == true && enemyStump.flash == false && enemyStump.dead == false)
 	{
-		aud_Monster.pause();
-		enemyStump.dead = true;
+		sfx_Enemy_Mushroom.pause();
+		sfx_Swing_Hit.play();
+		timeFlash = setInterval(enemyFlash, 500);
+		enemyStump.flash = true;
+		enemyStump.health--;
+		endFlash = setTimeout(function() {clearInterval(timeFlash);}, 1000);
+		if(enemyStump.health <= 0)
+			enemyStump.dead = true;
+		console.log("Weapon Hit Enemy");
+	}
+
+	if (player.x + player.xSize > enemyStump1.x + 20 && player.x < enemyStump1.x + 28 && player.y + player.ySize > enemyStump1.y + 28 && player.y < enemyStump1.y + 50 && enemyStump1.dead == false && area == 1)
+	{	
+		playerHealth--;
+		player.x += enemyStump1.speedX*200;
+		player.y += enemyStump1.speedY*200;
+		if (playerHealth <= 0) {
+			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+			playerDead();
+		}		
+	}
+
+	if (boomerang.x + boomerang.size > enemyStump1.x + 20 && boomerang.x < enemyStump1.x + 28 && boomerang.y + boomerang.size > enemyStump1.y + 28 && boomerang.y < enemyStump1.y + 50 && boomerang.thrown == true && enemyStump1.stun == false)
+	{
+		sfx_Enemy_Mushroom.pause();
+		boomerang.timeThrown = 1;
+		enemyStump1.stun = true;
+		timeStunned = setInterval(stunTimer, 1000);
+		console.log("Boomerang Hit Enemy");
+	}
+
+	if (player.x + weapon.dirX + weapon.xSize > enemyStump1.x + 20 && player.x + weapon.dirX < enemyStump1.x + 28 && player.y + weapon.dirY + weapon.ySize > enemyStump1.y + 28 && player.y + weapon.dirY < enemyStump1.y + 50 && weapon.attack == true && enemyStump1.flash == false && enemyStump1.dead == false)
+	{
+		sfx_Enemy_Mushroom.pause();
+		sfx_Swing_Hit.play();
+		timeFlash = setInterval(enemyFlash, 500);
+		enemyStump1.flash = true;
+		enemyStump1.health--;
+		endFlash = setTimeout(function() {clearInterval(timeFlash);}, 1000);
+		if(enemyStump1.health <= 0)
+			enemyStump1.dead = true;
+		console.log("Weapon Hit Enemy");
+	}
+
+	if (player.x + player.xSize > enemy1.x + 20 && player.x < enemy1.x + 28 && player.y + player.ySize > enemy1.y + 28 && player.y < enemy1.y + 50 && enemy1.dead == false && area == 1)
+	{	
+		sfx_Hurt.play();
+		playerHealth--;
+		player.x += enemy1.speedX*200;
+		player.y += enemy1.speedY*200;
+		if (playerHealth <= 0) {
+			canvasHealth.clearRect(0,0, elemHealth.width, elemHealth.height);
+			playerDead();
+		}		
+	}
+
+	if (boomerang.x + boomerang.size > enemy1.x + 20 && boomerang.x < enemy1.x + 28 && boomerang.y + boomerang.size > enemy1.y + 28 && boomerang.y < enemy1.y + 50 && boomerang.thrown == true && enemy1.stun == false)
+	{
+		sfx_Enemy_Mushroom.pause();
+		boomerang.timeThrown = 1;
+		enemy1.stun = true;
+		timeStunned = setInterval(stunTimer, 1000);
+		console.log("Boomerang Hit Enemy");
+	}
+
+	if (player.x + weapon.dirX + weapon.xSize > enemy1.x + 20 && player.x + weapon.dirX < enemy1.x + 28 && player.y + weapon.dirY + weapon.ySize > enemy1.y + 28 && player.y + weapon.dirY < enemy1.y + 50 && weapon.attack == true && enemy1.flash == false && enemy1.dead == false)
+	{
+		sfx_Enemy_Mushroom.pause();
+		sfx_Swing_Hit.play();
+		timeFlash = setInterval(enemyFlash, 500);
+		enemy1.flash = true;
+		enemy1.health--;
+		endFlash = setTimeout(function() {clearInterval(timeFlash);}, 1000);
+		if(enemy1.health <= 0)
+			enemy1.dead = true;
 		console.log("Weapon Hit Enemy");
 	}
 
@@ -974,12 +1284,23 @@ function checkCollision()
 	{
 		if (!tree.used) 
 		{
+			sfx_Swing_Hit.play();
 			inventory.push(logPickup);
 			tree.used = true;
 		}
 		console.log("Axe Hit Tree");
 	}
 
+	if (player.x + weapon.dirX + weapon.xSize > tree_Boss.x && player.x + weapon.dirX < tree_Boss.x + 64 && player.y + weapon.dirY + weapon.ySize > tree_Boss.y && player.y + weapon.dirY < tree_Boss.y + 64 && weapon.attack == true)
+	{
+		if (!tree_Boss.used) 
+		{
+			sfx_Swing_Hit.play(); 
+			tree_Boss.used = true;
+		}
+		console.log("Axe Hit Tree");
+	}
+	
 
 	oldPosition.x = player.x;
 	oldPosition.y = player.y;
@@ -987,6 +1308,8 @@ function checkCollision()
 	enemyOldPosition.y = enemy.y;
 	enemyStump.oldPosX = enemyStump.x;
 	enemyStump.oldPosY = enemyStump.y;
+	boss_Flower.oldPosX = boss_Flower.x;
+	boss_Flower.oldPosY = boss_Flower.y;
 }
 
 function animate()
@@ -1043,7 +1366,8 @@ function animate()
 	}
 }
 
-function openCraftMenu() {
+function openCraftMenu()
+{
 	if (!mainMenuOpen) {
 		craftInvOpen = !craftInvOpen;
 
@@ -1056,8 +1380,9 @@ function openCraftMenu() {
 	}
 }
 
-function openPauseMenu() {
-	if (!mainMenuOpen) {
+function openPauseMenu()
+{
+	if (!mainMenuOpen && !optMenuOpen && !controlsMenuOpen) {
 		pauseMenuOpen = !pauseMenuOpen;
 
 		if (pauseMenuOpen)  {
@@ -1066,22 +1391,34 @@ function openPauseMenu() {
 			canvasPause.textAlign = "center";
 			canvasPause.fillStyle = "black";
 			
+			if (lang == "EN") {	
 			canvasPause.fillText("PAUSED", (elemPause.width/2), 40);
-
-			btnSave.x = (elemPause.width/2) - 96;
-			btnSave.y = (elemPause.height/2) - 128;
-			btnLoad.x = (elemPause.width/2) - 96;
-			btnLoad.y = (elemPause.height/2) - 32;
-			btnExit.x = (elemPause.width/2) - 96;
-			btnExit.y = (elemPause.height/2) + 64;
 			
-			canvasPause.drawImage(btnSave.image, btnSave.x, btnSave.y, btnWidth, btnHeight);
-			canvasPause.drawImage(btnLoad.image, btnLoad.x, btnLoad.y, btnWidth, btnHeight);
-			canvasPause.drawImage(btnExit.image, btnExit.x, btnExit.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseOptions.image, btnPauseOptions.x, btnPauseOptions.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseControls.image, btnPauseControls.x, btnPauseControls.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseExit.image, btnPauseExit.x, btnPauseExit.y, btnWidth, btnHeight);
 		
-			canvasPause.fillText("SAVE", btnSave.x + (btnWidth / 2), btnSave.y + 45);
-			canvasPause.fillText("LOAD", btnLoad.x + (btnWidth / 2), btnLoad.y + 45);
-			canvasPause.fillText("EXIT", btnExit.x + (btnWidth / 2), btnExit.y + 45);
+			canvasPause.fillText("OPTIONS", btnPauseOptions.x + (btnWidth / 2), btnPauseOptions.y + 45);
+			canvasPause.fillText("EXIT", btnPauseExit.x + (btnWidth / 2), btnPauseExit.y + 45);
+			
+			canvasPause.font = "bold 32px Arial";
+			canvasPause.fillText("CONTROLS", btnPauseControls.x + (btnWidth / 2), btnPauseControls.y + 45);
+			}
+			
+			else if (lang == "FR") {	
+			canvasPause.fillText("PAUSED", (elemPause.width/2), 40);
+			
+			canvasPause.drawImage(btnPauseOptions.image, btnPauseOptions.x, btnPauseOptions.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseControls.image, btnPauseControls.x, btnPauseControls.y, btnWidth, btnHeight);
+			canvasPause.drawImage(btnPauseExit.image, btnPauseExit.x, btnPauseExit.y, btnWidth, btnHeight);
+		
+			canvasPause.fillText("OPTIONS", btnPauseOptions.x + (btnWidth / 2), btnPauseOptions.y + 45);
+			canvasPause.fillText("SORTIR", btnPauseExit.x + (btnWidth / 2), btnPauseExit.y + 45);
+			
+			canvasPause.font = "bold 28px Arial";
+			canvasPause.fillText("CONTRÔLES", btnPauseControls.x + (btnWidth / 2), btnPauseControls.y + 45);
+			
+			}
 		}
 		
 		else {
@@ -1091,19 +1428,19 @@ function openPauseMenu() {
 	}
 }
 
-function openRestartMenu() {
+function openRestartMenu()
+{
 	
 	restartMenuOpen = true;
 	elemRestart.style.visibility = "visible";
 	canvasRestart.textAlign = "center";
 	canvasRestart.fillStyle = "black";
 	
+	canvasRestart.drawImage(btnYes.image, btnYes.x, btnYes.y, btnWidth, btnHeight);
+	canvasRestart.drawImage(btnNo.image, btnNo.x, btnNo.y, btnWidth, btnHeight);
+	
 	if (lang == "EN") {		
-		canvasRestart.drawImage(btnYes.image, btnYes.x, btnYes.y, btnWidth, btnHeight);
-		canvasRestart.drawImage(btnNo.image, btnNo.x, btnNo.y, btnWidth, btnHeight);
-		
 		canvasRestart.font = "bold 30px Arial";
-		canvasRestart.fillText("You Died!!! ", (elemRestart.width/2), 40);
 		canvasRestart.fillText("Would You Like To Restart?", (elemRestart.width/2), 68);
 		
 		canvasRestart.font = "bold 36px Arial";
@@ -1111,13 +1448,20 @@ function openRestartMenu() {
 		canvasRestart.fillText("NO", btnNo.x + (btnWidth / 2), btnNo.y + 45);
 		
 	}
-	else if (lang == "FR")
-		document.getElementById("endGame").innerHTML = "Tu es mort...";
+	else if (lang == "FR") {
+		canvasRestart.font = "bold 30px Arial";
+		canvasRestart.fillText("Voulez-vous Redémarrer?", (elemRestart.width/2), 68);
+		
+		canvasRestart.font = "bold 36px Arial";
+		canvasRestart.fillText("OUI", btnYes.x + (btnWidth / 2), btnYes.y + 45);
+		canvasRestart.fillText("NON", btnNo.x + (btnWidth / 2), btnNo.y + 45);
+	}
 	
 	document.getElementById("endGame").style.visibility = "visible";
 }
 
-function clickItem(event) {
+function clickItem(event)
+{
 	
 	var mousePos = { 
 		x: event.pageX,
@@ -1146,6 +1490,7 @@ function clickItem(event) {
 			if (inventory.length >= 1) {
 				if (isIntersect(mousePos, {offsetLeft: inventory[inventory.indexOf(foodPickup)].x, offsetTop: inventory[inventory.indexOf(foodPickup)].y, width: inventory[inventory.indexOf(foodPickup)].width, height: inventory[inventory.indexOf(foodPickup)].height})) {
 					if (playerHealth < 3) {
+						sfx_Eat.play();
 						playerHealth++;
 						inventory.splice(inventory.indexOf(foodPickup), 1);
 					}
@@ -1177,7 +1522,8 @@ function clickItem(event) {
 	}
 }
 
-function isIntersect(point, elem) {
+function isIntersect(point, elem)
+{
 	if (point.x > elem.offsetLeft && point.x < elem.offsetLeft + elem.width && point.y > elem.offsetTop && point.y < elem.offsetTop + elem.height) {
 		
 		return true;
@@ -1186,10 +1532,151 @@ function isIntersect(point, elem) {
 		return false;
 }
 
-function craftItem(item1, item2) {
+function craftItem(item1, item2)
+{
 	if (item1 == stickPickup && item2 == rockPickup) {
 		craftInv.push(axePickup);
 	}
+	
+	else if (item1 == rockPickup && item2 == stickPickup) {
+		craftInv.push(axePickup);
+	}	
+	
+	else if (item1 == vinePickup && item2 == stickPickup) {
+		craftInv.push(rodPickup);
+	}	
+	
+	else if (item1 == stickPickup && item2 == vinePickup) {
+		craftInv.push(rodPickup);
+	}	
+	
+	else if (item1 == vinePickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == vinePickup && item2 == hidePickup) {
+		craftInv.push(bootPickup);
+	}	
+	
+	else if (item1 == hidePickup && item2 == vinePickup) {
+		craftInv.push(bootPickup);
+	}	
+	
+	else if (item1 == stickPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == stickPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == hidePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == hidePickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == stickPickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == stickPickup) {
+		craftInv.push(null);
+	}
+	
+	else if (item1 == vinePickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == rockPickup && item2 == flintPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == flintPickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == logPickup && item2 == flintPickup) {
+		craftInv.push(firePickup);
+	}	
+	
+	else if (item1 == flintPickup && item2 == logPickup) {
+		craftInv.push(firePickup);
+	}		
+	
+	else if (item1 == vinePickup && item2 == logPickup) {
+		craftInv.push(null);
+	}	
+	
+	else if (item1 == logPickup && item2 == vinePickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == rockPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == rockPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == stickPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == stickPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == axePickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == axePickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == foodPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == foodPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == rodPickup && item2 == logPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == logPickup && item2 == rodPickup) {
+		craftInv.push(null);
+	}		
+	
+	else if (item1 == firePickup && item2 == foodPickup) {
+		craftInv.push(cookedPickup);
+	}	
+	
+	else if (item1 == foodPickup && item2 == firePickup) {
+		craftInv.push(cookedPickup);
+	}		
 	
 	else 
 		craftInv.pop();
@@ -1222,6 +1709,7 @@ function onKeyDown(event)
 			interactWith();
 			break;
 		case 32: // Space Bar
+			console.log(player.x + ", " + player.y);
 			meleeAttack();
 			break;
 		case 81: // Q
@@ -1285,11 +1773,12 @@ function movePlayer()
 		player.frame = 0;
 }
 
-function playerDead() {
-	aud_Monster.pause();
-	aud_Death.play();
-	aud_Monster.loop = false;
-	aud_Music.pause();
+function playerDead()
+{
+	sfx_Enemy_Mushroom.pause();
+	sfx_Death.play();
+	sfx_Enemy_Mushroom.loop = false;
+	mus_Game.pause();
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
 	openRestartMenu();
@@ -1319,10 +1808,11 @@ function gameOver()
 {
 	clearInterval(updateInterval);
 	clearInterval(endTimer);
-	aud_Music.pause();	
+	mus_Game.pause();
+	mus_Boss_Flower.pause();
 	
-	if (enemy.dead == true) {
-		aud_Win.play();
+	if (boss_Flower.dead == true) {
+		mus_Win.play();
 		if (lang == "EN")
 			document.getElementById("endGame").innerHTML = "You Defeated The Enemy! You Win!";
 		else if (lang == "FR")
@@ -1331,8 +1821,8 @@ function gameOver()
 		document.getElementById("endGame").style.visibility = "visible";
 	}
 	else {
-		aud_Monster.pause();
-		aud_Lose.play();
+		sfx_Enemy_Mushroom.pause();
+		mus_Lose.play();
 		if (lang == "EN")
 			document.getElementById("endGame").innerHTML = "Game Over! You Lose!";
 		else if (lang == "FR")
@@ -1340,6 +1830,7 @@ function gameOver()
 		
 		document.getElementById("endGame").style.visibility = "visible";
 	}
+	openRestartMenu();
 }
 
 function render() 
@@ -1366,9 +1857,6 @@ function render()
 			for ( var col = 0; col < COLSAREA1; col++)
 				surface.drawImage(mapArea1[row][col].img,mapArea1[row][col].x,mapArea1[row][col].y, 64, 64);
 		}
-		
-		if (!stickPickup.used)
-			surface.drawImage(stickPickup.image, stickPickup.x, stickPickup.y);
 	}
 	
 	else if (area == 2) {
@@ -1376,11 +1864,15 @@ function render()
 			for ( var col = 0; col < COLSAREA2; col++)
 				surface.drawImage(mapArea2[row][col].img,mapArea2[row][col].x,mapArea2[row][col].y, 64, 64);
 		}
-		
-		if (!rockPickup.used)
-			surface.drawImage(rockPickup.image, rockPickup.x, rockPickup.y);
 	}
 
+	else if (area == 3) {
+		for (var row = 0; row < ROWSBOSS; row++) {
+			for ( var col = 0; col < COLSBOSS; col++)
+				surface.drawImage(mapAreaBoss[row][col].img,mapAreaBoss[row][col].x,mapAreaBoss[row][col].y, 64, 64);
+		}
+	}
+	
 	for (var ctr = 0; ctr < inventory.length; ctr++) {
 		inventory[ctr].x = ctr * 64;
 		inventory[ctr].y = 0;
@@ -1393,27 +1885,44 @@ function render()
 	}
 		
 	for (var ctr = 0; ctr < craftInv.length; ctr++) {
-		craftInv[ctr].x = ctr * 128;
-		craftInv[ctr].y = 0;
-		canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
+		if (craftInv[ctr] != null) {
+			craftInv[ctr].x = ctr * 128;
+			craftInv[ctr].y = 0;
+			canvasCraft.drawImage(craftInv[ctr].image, craftInv[ctr].x, craftInv[ctr].y, 64, 64);
+		}
 	}
-				
+		
+	if (!stickPickup.used && area == 0)
+			surface.drawImage(stickPickup.image, stickPickup.x, stickPickup.y);
+
+	if (!rockPickup.used && area == 0)
+			surface.drawImage(rockPickup.image, rockPickup.x, rockPickup.y);
+
 	if (!inventory.includes(foodPickup) || craftInv.includes(foodPickup))
 		surface.drawImage(foodPickup.image, foodPickup.x, foodPickup.y);
 		
-	if (!tree.used)
+	if (!tree.used && area == 0)
 		surface.drawImage(tree.image, tree.x, tree.y);
-
+	
+	if (!tree_Boss.used && area == 1)
+		surface.drawImage(tree_Boss.image, tree_Boss.x, tree_Boss.y);
+	
 	surface.drawImage(player.image, player.frame*48, player.dir*64, 48, 64, player.x, player.y, player.xSize, player.ySize);
 	
 	if (boomerang.thrown == true)
 		surface.drawImage(boomerang.image, boomerang.frame*68, 0, 68, 68, boomerang.x, boomerang.y, boomerang.size, boomerang.size);
 
-	if (!enemy.dead == true && area == 2)
+	if (!enemy.dead == true && area == 1)
 		surface.drawImage(enemy.image, enemy.x, enemy.y);
+
+	if (!enemy1.dead == true && area == 1)
+		surface.drawImage(enemy1.image, enemy1.x, enemy1.y);
 
 	if (!enemyStump.dead == true && area == 1)
 		surface.drawImage(enemyStump.image, enemyStump.frame*48, enemyStump.dir*64, 48, 64, enemyStump.x, enemyStump.y, 48, 64);
+
+	if (!enemyStump1.dead == true && area == 1)
+		surface.drawImage(enemyStump1.image, enemyStump1.frame*48, enemyStump1.dir*64, 48, 64, enemyStump1.x, enemyStump1.y, 48, 64);
 
 	if (weapon.attack == true) {
 		if (player.dir == 0 || player.dir == 2)
@@ -1424,5 +1933,12 @@ function render()
 	}
 	
 	for (var ctr = 0; ctr < playerHealth; ctr++)
-		canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);	
+		canvasHealth.drawImage(heart.image,(ctr * 64), 0, 64, 64);
+	
+	if (!boss_Flower.dead && area == 3) {
+		surface.drawImage(boss_Flower.image, boss_Flower.frame*48, boss_Flower.dir*64, 48, 64, boss_Flower.x, boss_Flower.y, 96, 96);
+		surface.drawImage(boss_Flower_Seed_1.image, boss_Flower_Seed_1.x, boss_Flower_Seed_1.y, 32, 32);
+		surface.drawImage(boss_Flower_Seed_2.image, boss_Flower_Seed_2.x, boss_Flower_Seed_2.y, 32, 32);
+		surface.drawImage(boss_Flower_Seed_3.image, boss_Flower_Seed_3.x, boss_Flower_Seed_3.y, 32, 32);
+	}
 }
